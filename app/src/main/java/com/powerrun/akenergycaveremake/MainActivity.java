@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -65,6 +66,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public boolean onLongClick(View view) {
                 clearDeviceInfo();
+                Toast.makeText(MainActivity.this, "请重新设置参数", Toast.LENGTH_SHORT).show();
                 // TODO 长按修改能量仓参数
                 return true;
             }
@@ -145,6 +147,7 @@ public class MainActivity extends BaseActivity {
                 View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_scanlist, null);
                 bleListView = view.findViewById(R.id.listview);
                 bleListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @SuppressLint("MissingPermission")
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                         BleManager.getInstance().cancelScan();
