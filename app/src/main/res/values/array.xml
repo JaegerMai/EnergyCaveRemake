@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="bg_music_list">
+        <item>云凝·肺脏养生乐</item>
+        <item>合和·脾脏养生乐</item>
+        <item>天涧·肾脏养生乐</item>
+        <item>破茧·肝脏养生乐</item>
+        <item>绽放·心脏养生乐</item>
+    </string-array>
+</resources>

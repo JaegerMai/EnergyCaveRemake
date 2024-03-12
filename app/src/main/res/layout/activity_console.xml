@@ -28,14 +28,15 @@
                     android:layout_gravity="center"
                     android:background="@drawable/icon_console_add_32_32"
                     android:scaleType="centerInside" />
+
                 <TextView
                     android:id="@+id/text_view_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="30分"
-                    android:textSize="30sp"
                     android:layout_gravity="center"
-                    android:textColor="@color/white"/>
+                    android:text="30分"
+                    android:textColor="@color/white"
+                    android:textSize="30sp" />
                 <ImageButton
                     android:id="@+id/image_button_time_dec"
                     android:layout_width="30dp"

@@ -17,7 +17,7 @@ public class MusicHelper {
     private int currentIndex = 0;
     private Context mContext;
     private MediaPlayer mediaPlayer;
-    private void create(Context context) {
+    public void create(Context context) {
         Log.i(TAG, "create");
         mContext = context;
         mediaPlayer = new MediaPlayer();
@@ -29,18 +29,18 @@ public class MusicHelper {
             }
         });
     }
-    private void destroy() {
+    public void destroy() {
         Log.i(TAG, "destroy");
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
         }
         mediaPlayer.release();
     }
-    private int getPosition() {
+    public int getPosition() {
         Log.i(TAG, "getPosition: index=" + currentIndex);
         return currentIndex;
     }
-    private void playSong(int index) {
+    public void playSong(int index) {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
         }
@@ -55,7 +55,7 @@ public class MusicHelper {
             e.printStackTrace();
         }
     }
-    private void pause() {
+    public void pause() {
         Log.i(TAG, "pause");
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
