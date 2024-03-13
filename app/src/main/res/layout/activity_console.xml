@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="50dp">
+        android:layout_marginTop="40dp">
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -20,14 +20,16 @@
                 android:layout_height="105dp"
                 android:background="@drawable/control_machine_voal_btn"
                 android:orientation="vertical"
-                android:layout_gravity="center">
+                android:layout_gravity="center"
+                android:gravity="center">
                 <ImageButton
                     android:id="@+id/image_button_time_add"
                     android:layout_width="23dp"
                     android:layout_height="23dp"
                     android:layout_gravity="center"
                     android:background="@drawable/icon_console_add_32_32"
-                    android:scaleType="centerInside" />
+                    android:scaleType="centerInside"
+                    android:layout_marginBottom="2dp"/>
 
                 <TextView
                     android:id="@+id/text_view_time"
@@ -37,13 +39,15 @@
                     android:text="30分"
                     android:textColor="@color/white"
                     android:textSize="30sp" />
+
                 <ImageButton
                     android:id="@+id/image_button_time_dec"
                     android:layout_width="30dp"
                     android:layout_height="23dp"
                     android:layout_gravity="center"
                     android:background="@drawable/icon_console_dec_32_32"
-                    android:scaleType="centerInside" />
+                    android:scaleType="centerInside"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
             <TextView
                 android:layout_width="wrap_content"
@@ -78,14 +82,16 @@
                     android:layout_height="105dp"
                     android:background="@drawable/control_machine_voal_btn"
                     android:orientation="vertical"
-                    android:layout_gravity="center">
+                    android:layout_gravity="center"
+                    android:gravity="center">
                     <ImageButton
                         android:id="@+id/image_button_temp_add_0"
                         android:layout_width="23dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
                         android:background="@drawable/icon_console_add_32_32"
-                        android:scaleType="centerInside" />
+                        android:scaleType="centerInside"
+                        android:layout_marginBottom="2dp"/>
                     <TextView
                         android:id="@+id/text_view_temp_0"
                         android:layout_width="wrap_content"
@@ -100,7 +106,8 @@
                         android:layout_height="23dp"
                         android:layout_gravity="center"
                         android:background="@drawable/icon_console_dec_32_32"
-                        android:scaleType="centerInside" />
+                        android:scaleType="centerInside"
+                        android:layout_marginTop="2dp"/>
                 </LinearLayout>
                 <TextView
                     android:layout_width="wrap_content"
@@ -136,20 +143,23 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:gravity="center">
                 <LinearLayout
                     android:layout_width="105dp"
                     android:layout_height="105dp"
                     android:background="@drawable/control_machine_voal_btn"
                     android:orientation="vertical"
-                    android:layout_gravity="center">
+                    android:layout_gravity="center"
+                    android:gravity="center">
                     <ImageButton
                         android:id="@+id/image_button_temp_add_1"
                         android:layout_width="23dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
                         android:background="@drawable/icon_console_add_32_32"
-                        android:scaleType="centerInside" />
+                        android:scaleType="centerInside"
+                        android:layout_marginBottom="2dp"/>
                     <TextView
                         android:id="@+id/text_view_temp_1"
                         android:layout_width="wrap_content"
@@ -164,7 +174,8 @@
                         android:layout_height="23dp"
                         android:layout_gravity="center"
                         android:background="@drawable/icon_console_dec_32_32"
-                        android:scaleType="centerInside" />
+                        android:scaleType="centerInside"
+                        android:layout_marginTop="2dp"/>
                 </LinearLayout>
                 <TextView
                     android:layout_width="wrap_content"
@@ -195,8 +206,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="40dp"
-        android:layout_marginBottom="40dp">
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp">
         <!--开关-->
         <LinearLayout
             android:layout_width="0dp"
@@ -204,7 +215,7 @@
             android:orientation="vertical"
             android:layout_weight="1">
             <ImageButton
-                android:id="@+id/image_button_switch"
+                android:id="@+id/image_button_power"
                 android:layout_width="43dp"
                 android:layout_height="43dp"
                 android:layout_gravity="center"
