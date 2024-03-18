@@ -76,6 +76,8 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        BleManager.getInstance().disconnectAllDevice();
+        BleManager.getInstance().destroy();
     }
 
     //初始化能量仓参数
@@ -120,8 +122,7 @@ public class MainActivity extends BaseActivity {
         BleManager.getInstance()
                 .enableLog(true)
                 .setReConnectCount(1, 5000)
-                .setSplitWriteNum(20)
-                .setConnectOverTime(10000)
+                .setConnectOverTime(20000)
                 .setOperateTimeout(5000);
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
 //                .setServiceUuids(serviceUuids)

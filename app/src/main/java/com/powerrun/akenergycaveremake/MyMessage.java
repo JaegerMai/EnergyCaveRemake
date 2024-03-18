@@ -32,4 +32,5 @@ public class MyMessage {
     public static final int PW_1_MIN = 0;
     public static final int TM_MAX = 90;
     public static final int TM_MIN = 0;
+
 }

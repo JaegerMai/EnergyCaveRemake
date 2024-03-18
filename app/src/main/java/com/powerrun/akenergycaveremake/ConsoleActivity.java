@@ -3,7 +3,10 @@ package com.powerrun.akenergycaveremake;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothGatt;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -19,16 +22,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.clj.fastble.BleManager;
+import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleNotifyCallback;
+import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.exception.BleException;
 import com.powerrun.akenergycaveremake.common.BaseActivity;
+import com.powerrun.akenergycaveremake.common.SystemConfig;
+import com.powerrun.akenergycaveremake.mvc.ConsoleController;
+import com.powerrun.akenergycaveremake.mvc.ConsoleModel;
+import com.powerrun.akenergycaveremake.mvc.ConsoleView;
 
 import java.io.File;
 import java.util.HashMap;
 
-public class ConsoleActivity extends BaseActivity implements View.OnClickListener, View.OnLongClickListener {
+public class ConsoleActivity extends BaseActivity implements View.OnClickListener, View.OnLongClickListener, ConsoleView {
     private static final String TAG = "ConsoleActivity";
     private Context mContext;
     private MusicHelper musicHelper;
+    private ProgressDialog progressDialog;
     private Handler exitLongPressHandler = new Handler();
+    private ConsoleController controller;
+    private ConsoleModel model;
     private static final String FONT_DIGITAL_7 = "raw" + File.separator
             + "digital-7.ttf";
     //按钮点击和长按事件,使用HashMap存储
@@ -39,19 +54,25 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_console);
         mContext = this;
+        //初始化控制器
+        model = new ConsoleModel();
+        controller = new ConsoleController(model,this);
+
         //初始化音乐播放器
         musicHelper = new MusicHelper();
         musicHelper.create(mContext);
         //初始化UI
         initUI();
-        //TODO: 初始化蓝牙
+        //连接蓝牙
+        connectBle();
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         musicHelper.destroy();
         findViewById(R.id.image_button_music).clearAnimation();
-        //TODO: 关闭蓝牙
+        //TODO: 发送退出指令
+        BleManager.getInstance().disconnectAllDevice();
     }
     @Override
     public void onClick(View view) {
@@ -69,6 +90,65 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         Toast.makeText(getApplicationContext(), "长按了"+view.getId(), Toast.LENGTH_SHORT).show();
         return true;
     }
+
+    /**
+     * 连接蓝牙
+     */
+    private void connectBle() {
+        String deviceAddress = SystemConfig.mBLEAddress;
+        if(deviceAddress.isEmpty()){
+            Log.e(TAG, "connectBle: empty device address");
+            Toast.makeText(getApplicationContext(), "connectBle: empty device address", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        BleManager.getInstance().connect(deviceAddress, bleGattCallback);
+    }
+    /**
+     * 蓝牙连接回调
+     */
+    private BleGattCallback bleGattCallback = new BleGattCallback() {
+        @Override
+        public void onStartConnect() {
+            progressDialog.show();
+        }
+        @Override
+        public void onConnectFail(BleDevice bleDevice, BleException exception) {
+            Log.e(TAG,"BleGattCallback: onConnectFail");
+            progressDialog.dismiss();
+            Toast.makeText(getApplicationContext(),"BleGattCallback: onConnectFail",Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+            progressDialog.dismiss();
+            model.setBleDevice(bleDevice);
+            //开始交换数据
+            BleManager.getInstance().notify(bleDevice, SystemConfig.UUID_SERVICE, SystemConfig.UUID_NOTIFY, bleNotifyCallback);
+        }
+        @Override
+        public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
+            progressDialog.dismiss();
+            if (isActiveDisConnected) {
+                Toast.makeText(getApplicationContext(), "连接中断", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "已断开连接", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+    private BleNotifyCallback bleNotifyCallback = new BleNotifyCallback() {
+        @Override
+        public void onNotifySuccess() {
+            Log.i(TAG, "onNotifySuccess: ");
+        }
+        @Override
+        public void onNotifyFailure(BleException exception) {
+            Log.e(TAG, "onNotifyFailure: ");
+        }
+        @Override
+        public void onCharacteristicChanged(byte[] data) {
+            //TODO: 解析数据
+
+        }
+    };
     /**
      * 重写返回键，退出时弹出提示框
      */
@@ -76,27 +156,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     public void onBackPressed() {
         super.onBackPressed();
         showExitDialog();
-    }
-    /**
-     * 根据传感器返回的数据修改温度显示
-     * 分别在30,35,40,45度时显示不同的图标
-     */
-    void updateTempDisplay(ImageView iv, int temp) {
-        int[] tempIcons = {
-                R.drawable.icon_console_weatherglass_1_39_104,
-                R.drawable.icon_console_weatherglass_2_39_104,
-                R.drawable.icon_console_weatherglass_3_39_104,
-                R.drawable.icon_console_weatherglass_4_39_104,
-                R.drawable.icon_console_weatherglass_5_39_104
-        };
-        // 30-45度之间显示不同的图标
-        int index = temp / 5;
-        if (index < 0) {
-            index = 0;
-        } else if (index > 4) {
-            index = 4;
-        }
-        iv.setImageResource(tempIcons[index]);
     }
     /**
      * 打开音乐选择对话框
@@ -193,6 +252,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
 
         // 为每个按钮ID添加对应的操作
         clickActions.put(R.id.image_button_music, this::openMusicDialog);
+        clickActions.put(R.id.image_button_power, controller::handlePowerButton);
         // TODO: 添加其他按钮的点击事件
 
         // 设置字体样式
@@ -221,7 +281,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 .setTitle("警告")
                 .setMessage("确定要退出吗？")
                 .setPositiveButton("确定", (dialog, which) -> {
-                    //TODO: 蓝牙发送推出指令
+                    //TODO: 蓝牙发送退出指令
                     dialog.dismiss();
                     finish();
                 })
@@ -230,4 +290,40 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 });
         builder.create().show();
     }
+
+    /**
+     * 温感温度变化回调
+     * @param channel 通道
+     * @param temp 温度
+     */
+    @Override
+    public void onTempChange(int channel, int temp) {
+        if (channel == 0) {
+            updateTempDisplay(findViewById(R.id.image_view_temp_0), temp);
+        } else if (channel == 1) {
+            updateTempDisplay(findViewById(R.id.image_view_temp_1), temp);
+        }
+    }
+    /**
+     * 根据传感器返回的数据修改温度显示
+     * 分别在30,35,40,45度时显示不同的图标
+     */
+    void updateTempDisplay(ImageView iv, int temp) {
+        int[] tempIcons = {
+                R.drawable.icon_console_weatherglass_1_39_104,
+                R.drawable.icon_console_weatherglass_2_39_104,
+                R.drawable.icon_console_weatherglass_3_39_104,
+                R.drawable.icon_console_weatherglass_4_39_104,
+                R.drawable.icon_console_weatherglass_5_39_104
+        };
+        // 30-45度之间显示不同的图标
+        int index = temp / 5;
+        if (index < 0) {
+            index = 0;
+        } else if (index > 4) {
+            index = 4;
+        }
+        iv.setImageResource(tempIcons[index]);
+    }
+    //TODO: 开一个线程在开始控制的时候记录温感数据，1min一次？
 }

@@ -1,5 +1,7 @@
 package com.powerrun.akenergycaveremake.common;
 
+import java.util.UUID;
+
 public class SystemConfig {
     public static String mBLEName="AnKangConsole";
     public static String mBLEAddress = "";
@@ -19,4 +21,9 @@ public class SystemConfig {
     public static int defaultChan0Level = 3;
     public static int defaultChan1Level = 3;
     public static String defaultPowerType = "new_power";
+    /**
+     *  蓝牙UUID
+     */
+    public final static String UUID_NOTIFY ="0000ffe1-0000-1000-8000-00805f9b34fb";
+    public final static String UUID_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb";
 }
