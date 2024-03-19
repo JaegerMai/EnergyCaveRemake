@@ -35,6 +35,7 @@ import com.powerrun.akenergycaveremake.mvc.ConsoleView;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class ConsoleActivity extends BaseActivity implements View.OnClickListener, View.OnLongClickListener, ConsoleView {
     private static final String TAG = "ConsoleActivity";
@@ -71,7 +72,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         super.onDestroy();
         musicHelper.destroy();
         findViewById(R.id.image_button_music).clearAnimation();
-        //TODO: 发送退出指令
         BleManager.getInstance().disconnectAllDevice();
     }
     @Override
@@ -127,6 +127,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         @Override
         public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
             progressDialog.dismiss();
+            //清空蓝牙数据队列
+            controller.clearDataQueue();
             if (isActiveDisConnected) {
                 Toast.makeText(getApplicationContext(), "连接中断", Toast.LENGTH_SHORT).show();
             } else {
@@ -145,8 +147,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         }
         @Override
         public void onCharacteristicChanged(byte[] data) {
-            //TODO: 解析数据
-
+            controller.addData(data);
         }
     };
     /**
@@ -213,7 +214,9 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                         dialog.dismiss();
                     })
                     .setPositiveButton("确定", (dialog, which) -> {
-                        //TODO: 清除蓝牙设备连接，并关机
+                        //清除蓝牙设备连接，并关机
+                        controller.clearDeviceInfo(mContext);
+                        controller.handleExit();
                         dialog.dismiss();
                         finish();
                     });
@@ -250,10 +253,15 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         }
         findViewById(R.id.image_button_exit).setOnTouchListener(exitLongPressListener);
 
-        // 为每个按钮ID添加对应的操作
+        // 为每个按钮ID添加对应的点击事件
+        clickActions.put(R.id.image_button_time_add, controller::handleTimeAdd);
+        clickActions.put(R.id.image_button_time_dec, controller::handleTimeDec);
+        clickActions.put(R.id.image_button_temp_add_0, controller::handleTempAdd0);
+        clickActions.put(R.id.image_button_temp_dec_0, controller::handleTempDec0);
+        clickActions.put(R.id.image_button_temp_add_1, controller::handleTempAdd1);
+        clickActions.put(R.id.image_button_temp_dec_1, controller::handleTempDec1);
         clickActions.put(R.id.image_button_music, this::openMusicDialog);
         clickActions.put(R.id.image_button_power, controller::handlePowerButton);
-        // TODO: 添加其他按钮的点击事件
 
         // 设置字体样式
         AssetManager assets = getApplication().getAssets();
@@ -281,7 +289,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 .setTitle("警告")
                 .setMessage("确定要退出吗？")
                 .setPositiveButton("确定", (dialog, which) -> {
-                    //TODO: 蓝牙发送退出指令
+                    //蓝牙发送退出指令
+                    controller.handleExit();
                     dialog.dismiss();
                     finish();
                 })
@@ -304,6 +313,42 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             updateTempDisplay(findViewById(R.id.image_view_temp_1), temp);
         }
     }
+
+    /**
+     * 发送消息回调
+     * @param msg 消息
+     */
+    @Override
+    public void onMessage(String msg) {
+        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 设置时间回调
+     * @param value 时间
+     */
+    @Override
+    public void onTimeSet(int value) {
+        TextView tv = findViewById(R.id.text_view_time);
+        tv.setText(String.format(Locale.CHINA, "%d", value));
+    }
+
+    /**
+     * 设置温度回调
+     * @param channel 通道
+     * @param value 温度
+     */
+    @Override
+    public void onTempSet(ConsoleModel.Channel channel, int value) {
+        if (channel == ConsoleModel.Channel.CHANNEL_0) {
+            TextView tv = findViewById(R.id.text_view_temp_0);
+            tv.setText(String.format(Locale.CHINA, "%d°C", value));
+        } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
+            TextView tv = findViewById(R.id.text_view_temp_1);
+            tv.setText(String.format(Locale.CHINA, "%d°C", value));
+        }
+    }
+
     /**
      * 根据传感器返回的数据修改温度显示
      * 分别在30,35,40,45度时显示不同的图标
@@ -325,5 +370,4 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         }
         iv.setImageResource(tempIcons[index]);
     }
-    //TODO: 开一个线程在开始控制的时候记录温感数据，1min一次？
 }

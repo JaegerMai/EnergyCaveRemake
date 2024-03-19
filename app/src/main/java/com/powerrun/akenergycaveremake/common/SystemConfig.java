@@ -20,7 +20,7 @@ public class SystemConfig {
     public static int defaultCostTime = 30;
     public static int defaultChan0Level = 3;
     public static int defaultChan1Level = 3;
-    public static String defaultPowerType = "new_power";
+    public static int defaultPowerType = 1;//new_power为1,old_power为0
     /**
      *  蓝牙UUID
      */
