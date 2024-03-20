@@ -257,6 +257,7 @@ public class ConsoleController {
         return power;
     }
     private void adjustBothTempLevels(int currentTemp0, int currentTemp1){
+        //TODO 60s调整一次
         int power0 = adjustTempLevel(currentTemp0, model.getTargetTemp0(), model.getPower0(), MyMessage.PW_DEC_CODE_0, MyMessage.PW_ADD_CODE_0);
         int power1 = adjustTempLevel(currentTemp1, model.getTargetTemp1(), model.getPower1(), MyMessage.PW_DEC_CODE_1, MyMessage.PW_ADD_CODE_1);
 
