@@ -164,7 +164,7 @@ public class ConsoleController {
         view.onPowerStateChange(model.getPowerState());
     }
     /**
-     * 推出控制台处理逻辑
+     * 退出控制台处理逻辑
      */
     public void handleExit() {
         if (!BleManager.getInstance().isConnected(model.getBleDevice())) {
@@ -239,6 +239,29 @@ public class ConsoleController {
             return;
         }
         //TODO: 处理蓝牙数据
+    }
+    /**
+     * 调整温度挡位
+     * 当前温度与目标温度相差一定值时，调整挡位
+     */
+    private int adjustTempLevel(int currentTemp, int targetTemp, int power, String powerDecCode, String powerAddCode) {
+        int temperatureTolerance = 2; // 温度误差裕度
+
+        if(currentTemp > targetTemp + temperatureTolerance && power > MyMessage.PW_MIN){
+            power -= 1;
+            writeDataToDevice(powerDecCode);
+        } else if(currentTemp < targetTemp - temperatureTolerance && power < MyMessage.PW_MAX){
+            power += 1;
+            writeDataToDevice(powerAddCode);
+        }
+        return power;
+    }
+    private void adjustBothTempLevels(int currentTemp0, int currentTemp1){
+        int power0 = adjustTempLevel(currentTemp0, model.getTargetTemp0(), model.getPower0(), MyMessage.PW_DEC_CODE_0, MyMessage.PW_ADD_CODE_0);
+        int power1 = adjustTempLevel(currentTemp1, model.getTargetTemp1(), model.getPower1(), MyMessage.PW_DEC_CODE_1, MyMessage.PW_ADD_CODE_1);
+
+        model.setPower0(power0);
+        model.setPower1(power1);
     }
     /**
      * 向设备写入数据
