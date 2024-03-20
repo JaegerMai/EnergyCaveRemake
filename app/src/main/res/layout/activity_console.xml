@@ -220,20 +220,24 @@
                 android:layout_height="43dp"
                 android:layout_gravity="center"
                 android:background="@drawable/switch_grey_pressed_64_64"/>
+
             <TextView
+                android:id="@+id/tv_power_cn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="开始"
                 android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
+
             <TextView
+                android:id="@+id/tv_power_en"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="START"
                 android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:textSize="10sp"/>
+                android:textSize="10sp" />
         </LinearLayout>
 
         <!--退出-->

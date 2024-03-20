@@ -19,17 +19,13 @@ public class MyMessage {
     public static final String T_ADD_CH_1 = "n";          //12.ch1温度设定增：n
     public static final String T_DEC_CH_1 = "o";          //13.ch1温度设定减：o
 
-    public static final int PW_ch0_MAX = 60;
-    public static final int PW_ch0_MIN = 30;
-    public static final int PW_ch1_MAX = 60;
-    public static final int PW_ch1_MIN = 30;
+    public static final int TARGET_TEMP_MAX = 60;
+    public static final int TARGET_TEMP_MIN = 30;
 
     /**---------------------------------------------------**/
 
-    public static final int PW_0_MAX = 5;
-    public static final int PW_0_MIN = 0;
-    public static final int PW_1_MAX = 5;
-    public static final int PW_1_MIN = 0;
+    public static final int PW_MAX = 5;
+    public static final int PW_MIN = 0;
     public static final int TM_MAX = 90;
     public static final int TM_MIN = 0;
 

@@ -32,16 +32,72 @@ public class ConsoleController {
      * 温度控制处理逻辑
      */
     public void handleTempAdd0(){
-
+        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_0);
     }
     public void handleTempDec0(){
-
+        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_0);
     }
     public void handleTempAdd1(){
-
+        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_1);
     }
     public void handleTempDec1(){
+        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_1);
+    }
+    private void tempChange(int action, ConsoleModel.Channel channel){
+        Log.i(TAG, "tempChange: " + action + ", Channel" + channel);
+        //获取当前温度和挡位
+        int targetTemp = (channel == ConsoleModel.Channel.CHANNEL_0)
+                ? model.getTargetTemp0() : model.getTargetTemp1();
+        int powerTemp = (channel == ConsoleModel.Channel.CHANNEL_0)
+                ? model.getPower0() : model.getPower1();
+        //判断当前温度是否已经达到上下限
+        switch (action){
+            case ConsoleModel.ADD:
+                if(targetTemp >= MyMessage.TARGET_TEMP_MAX){
+                    view.onMessage("温度已达上限");
+                    break;
+                }
+                targetTemp += 1;
+                //发送温度数据到设备
+                writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
+                        ? MyMessage.T_ADD_CH_0 : MyMessage.T_ADD_CH_1);
+                //发送挡位数据到设备，如果已经是最大值则不发送
+                if(powerTemp < MyMessage.PW_MAX){
+                    powerTemp += 1;
+                    writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
+                            ? MyMessage.PW_ADD_CODE_0 : MyMessage.PW_ADD_CODE_1);
+                }
 
+                break;
+            case ConsoleModel.DEC:
+                if(targetTemp <= MyMessage.TARGET_TEMP_MIN){
+                    view.onMessage("温度已达下限");
+                    break;
+                }
+                targetTemp -= 1;
+                //发送温度数据到设备
+                writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
+                        ? MyMessage.T_DEC_CH_0 : MyMessage.T_DEC_CH_1);
+                //发送挡位数据到设备，如果已经是最小值则不发送
+                if(powerTemp > MyMessage.PW_MIN){
+                    powerTemp -= 1;
+                    writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
+                            ? MyMessage.PW_DEC_CODE_0 : MyMessage.PW_DEC_CODE_1);
+                }
+                break;
+        }
+        //更新数据
+        switch (channel){
+            case CHANNEL_0:
+                model.setTargetTemp0(targetTemp);
+                model.setPower0(powerTemp);
+                break;
+            case CHANNEL_1:
+                model.setTargetTemp1(targetTemp);
+                model.setPower1(powerTemp);
+                break;
+        }
+        view.onTempSet(channel, targetTemp);
     }
     /**
      * 时间控制处理逻辑
@@ -88,21 +144,24 @@ public class ConsoleController {
      * 开关处理逻辑
      */
     public void handlePowerButton(){
-        if(!BleManager.getInstance().isConnected(model.getBleDevice())) {
-            Log.e(TAG, "handlePowerButton: 设备未连接");
-            return;
-        }
         //TODO: 电源按钮处理逻辑
         ConsoleModel.PowerState currentState = model.getPowerState();
         switch (currentState){
             case POWER_STATE_OFF:
+                if(model.getPowerType() == ConsoleModel.POWER_TYPE_NEW){
+                    writeDataToDevice(MyMessage.SHDN_CODE);//开机->进入on_stop
+                } else {
+                    writeDataToDevice(MyMessage.SHDN_CODE);
+                    writeDataToDevice(MyMessage.SHDN_CODE);//开机->进入on_stop
+                }
             case POWER_STATE_PAUSE:
-                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNIG);
+
                 break;
             case POWER_STATE_RUNNIG:
-                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
+
                 break;
         }
+        view.onPowerStateChange(model.getPowerState());
     }
     /**
      * 推出控制台处理逻辑

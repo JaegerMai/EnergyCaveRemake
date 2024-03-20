@@ -5,4 +5,5 @@ public interface ConsoleView {
     void onMessage(String msg);
     void onTimeSet(int value);
     void onTempSet(ConsoleModel.Channel channel, int value);
+    void onPowerStateChange(ConsoleModel.PowerState powerState);
 }

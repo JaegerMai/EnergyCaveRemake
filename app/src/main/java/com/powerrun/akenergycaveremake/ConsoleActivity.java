@@ -340,12 +340,37 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      */
     @Override
     public void onTempSet(ConsoleModel.Channel channel, int value) {
+        TextView tv = null;
         if (channel == ConsoleModel.Channel.CHANNEL_0) {
-            TextView tv = findViewById(R.id.text_view_temp_0);
-            tv.setText(String.format(Locale.CHINA, "%d°C", value));
+            tv = findViewById(R.id.text_view_temp_0);
         } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
-            TextView tv = findViewById(R.id.text_view_temp_1);
-            tv.setText(String.format(Locale.CHINA, "%d°C", value));
+            tv = findViewById(R.id.text_view_temp_1);
+        }
+        assert tv != null;
+        tv.setText(String.format(Locale.CHINA, "%d°C", value));
+    }
+
+    @Override
+    public void onPowerStateChange(ConsoleModel.PowerState powerState) {
+        ImageButton powerButton = findViewById(R.id.image_button_power);
+        TextView tvPowerCn = findViewById(R.id.tv_power_cn);
+        TextView tvPowerEn = findViewById(R.id.tv_power_en);
+        switch (powerState) {
+            case POWER_STATE_RUNNIG:
+                powerButton.setImageResource(R.drawable.icon_console_pause_red_64_64);
+                tvPowerCn.setText("暂停");
+                tvPowerEn.setText("Pause");
+                break;
+            case POWER_STATE_PAUSE:
+                powerButton.setImageResource(R.drawable.icon_console_resume_64_64);
+                tvPowerCn.setText("继续");
+                tvPowerEn.setText("Resume");
+                break;
+            case POWER_STATE_OFF:
+                powerButton.setImageResource(R.drawable.switch_blue_pressed_64_64);
+                tvPowerCn.setText("开始");
+                tvPowerEn.setText("Start");
+                break;
         }
     }
 
