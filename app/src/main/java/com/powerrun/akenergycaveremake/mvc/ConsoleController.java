@@ -18,16 +18,23 @@ public class ConsoleController {
     private ConsoleModel model;
     private ConsoleView view;
     private BluetoothDataProcessor processor;
-    public ConsoleController(ConsoleModel model, ConsoleView view) {
+    public ConsoleController(ConsoleModel model, ConsoleView view, Context context) {
         this.model = model;
         this.view = view;
-        processor = new BluetoothDataProcessor(new BluetoothDataProcessor.DataListener() {
-            @Override
-            public void onDataReceived(byte[] data) {
-                updateStatus(data);
-            }
-        });
+        initParams(context);
+        processor = new BluetoothDataProcessor(this::updateStatus);
     }
+    /**
+     * 初始化能量仓参数
+     */
+    private void initParams(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SystemConfig.SP_ANKANG_EnergyCave, MODE_PRIVATE);
+        model.setPower0(sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER0, SystemConfig.defaultChan0Level));
+        model.setPower1(sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER1, SystemConfig.defaultChan1Level));
+        model.setTimeRemain(sharedPreferences.getInt(SystemConfig.DEFAULT_COST_TIME, SystemConfig.defaultCostTime));
+        model.setPowerType(sharedPreferences.getInt(SystemConfig.DEFAULT_POWER_TYPE, SystemConfig.defaultPowerType));
+    }
+
     /**
      * 温度控制处理逻辑
      */
@@ -190,28 +197,24 @@ public class ConsoleController {
     }
     /**
      * 获取温感温度
-     * @param channel0 通道0
-     * @param channel1 通道1
+     * @param channelA 通道的温感1
+     * @param channelB 通道的温感2
      * @return 返回温度较低的值
      */
-    public int getCurrentTemp(int channel0, int channel1){
+    public int getCurrentTemp(int channelA, int channelB){
         int maxTemp = 127;  //未插温感线
         int exceptionTemp = 85; //温感异常值
         //判断温感是否异常
-        if(maxTemp == channel0 || exceptionTemp == channel0){
+        if(maxTemp == channelA || exceptionTemp == channelA){
             Log.e(TAG, "getCurrentTemp: channel0温感异常");
-            return channel1;
+            return channelB;
         }
-        if(maxTemp == channel1 || exceptionTemp == channel1){
+        if(maxTemp == channelB || exceptionTemp == channelB){
             Log.e(TAG, "getCurrentTemp: channel1温感异常");
-            return channel0;
+            return channelA;
         }
         //返回温度较低的值
-        if(channel0 < channel1) {
-            return channel0;
-        } else {
-            return channel1;
-        }
+        return Math.min(channelA, channelB);
     }
     /**
      * 清除设备信息
@@ -229,16 +232,100 @@ public class ConsoleController {
         第5 6字节是温度门限 =>舱内温度
         第7-14字节是温感实时温度  =>石墨烯温度
         第15-18预留给能量房用的功率和温度门限
-     *
      * //00 关机暂停，01关机运行，10开机暂停，11开机运行
      */
+    //是否需要同步数据到能量仓
+    static boolean needSync = true;
+    //储存上一次调整温度挡位的时间
+    private long lastAdjustTime = 0;
     public void updateStatus(byte[] data){
         //判断数据是否异常
         if(null == data || data.length < 16){
             Log.e(TAG, "processBleData: 数据异常");
             return;
         }
-        //TODO: 处理蓝牙数据
+
+        //bit 1 开关机 10开机暂停，11开机运行
+        int powerState = (data[3] & 0x02) >> 1;
+        int isRunning = (data[3] & 0x01);
+        //判断运行状态
+        if(powerState == 1 && isRunning == 1){
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNIG);
+            needSync = false;
+        } else if(powerState == 1 && isRunning == 0){
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
+            needSync = true;
+        } else {
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
+        }
+        view.onPowerStateChange(model.getPowerState());//同步电源UI
+
+        //开机后先同步设备数据到能量仓
+        if(needSync){
+            syncDataToDevice(data);
+        }
+
+        //解析数据
+        model.setPower0(data[0]);//通道0功率
+        model.setPower1(data[1]);//通道1功率
+        model.setTimeRemain(data[2]);//剩余时间
+        model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
+        model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
+        view.onTimeSet(model.getTimeRemain());//同步时间UI
+        view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
+        view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());
+        //同步温度设定值
+        model.setTargetTemp0(data[4]);//通道0目标温度
+        model.setTargetTemp1(data[5]);//通道1目标温度
+        view.onTempSet(ConsoleModel.Channel.CHANNEL_0, model.getTargetTemp0());//同步温度UI
+        view.onTempSet(ConsoleModel.Channel.CHANNEL_1, model.getTargetTemp1());//同步温度UI
+
+        //调整温度挡位, 60s调整一次
+        long currentTime = System.currentTimeMillis();
+        if(currentTime - lastAdjustTime > 60 * 1000){
+            adjustBothTempLevels(model.getCurrentTemp0(), model.getCurrentTemp1());
+            lastAdjustTime = currentTime;
+        }
+    }
+    /**
+     * 重新连接蓝牙时同步数据到设备
+     */
+    private void syncDataToDevice(byte[] data){
+        Log.i(TAG, "syncDataToDevice: 同步数据到设备");
+        if(model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_PAUSE){ //等待到开机了，同步完之后才可以正常运行
+            return;
+        }
+        view.onDeviceSync(true);
+        int devicePower0 = data[0];//设备通道0功率
+        int devicePower1 = data[1];//设备通道1功率
+        int deviceTime = data[2];//设备剩余时间
+        int deviceTemp0 = data[4];//设备通道0目标温度
+        int deviceTemp1 = data[5];//设备通道1目标温度
+        Log.i(TAG, String.format("syncDataToDevice: device data: power0:%d, power1:%d, time:%d, temp0:%d, temp1:%d\n",
+            devicePower0, devicePower1, deviceTime, deviceTemp0, deviceTemp1));
+        //同步数据到设备
+        sendSignalToDevice(model.getPower0() - devicePower0, MyMessage.PW_ADD_CODE_0, MyMessage.PW_DEC_CODE_0);
+        sendSignalToDevice(model.getPower1() - devicePower1, MyMessage.PW_ADD_CODE_1, MyMessage.PW_DEC_CODE_1);
+        sendSignalToDevice(model.getTimeRemain() - deviceTime, MyMessage.TM_ADD_CODE, MyMessage.TM_DEC_CODE);
+        sendSignalToDevice(model.getTargetTemp0() - deviceTemp0, MyMessage.T_ADD_CH_0, MyMessage.T_DEC_CH_0);
+        sendSignalToDevice(model.getTargetTemp1() - deviceTemp1, MyMessage.T_ADD_CH_1, MyMessage.T_DEC_CH_1);
+        Log.i(TAG, "syncDataToDevice: 同步数据到设备完成");
+        //转到运行状态pause->running
+        writeDataToDevice(MyMessage.STOP_CODE);
+        view.onDeviceSync(false);
+    }
+    /**
+     * 同步数据到设备，包括功率、时间、温度
+     * @param difference 参数差值
+     * @param addCode 增加指令
+     * @param decCode 减少指令
+     */
+    private void sendSignalToDevice(int difference, String addCode, String decCode){
+        String signalCode = difference > 0 ? addCode : decCode;
+        int times = Math.abs(difference);
+        for(int i = 0; i < times; i++){
+            writeDataToDevice(signalCode);
+        }
     }
     /**
      * 调整温度挡位
@@ -256,8 +343,14 @@ public class ConsoleController {
         }
         return power;
     }
+
+    /**
+     * 调整两个通道的温度挡位
+     * @param currentTemp0 通道0当前温度
+     * @param currentTemp1 通道1当前温度
+     */
     private void adjustBothTempLevels(int currentTemp0, int currentTemp1){
-        //TODO 60s调整一次
+
         int power0 = adjustTempLevel(currentTemp0, model.getTargetTemp0(), model.getPower0(), MyMessage.PW_DEC_CODE_0, MyMessage.PW_ADD_CODE_0);
         int power1 = adjustTempLevel(currentTemp1, model.getTargetTemp1(), model.getPower1(), MyMessage.PW_DEC_CODE_1, MyMessage.PW_ADD_CODE_1);
 

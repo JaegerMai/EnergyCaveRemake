@@ -3,6 +3,7 @@ package com.powerrun.akenergycaveremake;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
@@ -57,7 +58,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         mContext = this;
         //初始化控制器
         model = new ConsoleModel();
-        controller = new ConsoleController(model,this);
+        controller = new ConsoleController(model,this, mContext);
 
         //初始化音乐播放器
         musicHelper = new MusicHelper();
@@ -72,6 +73,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         super.onDestroy();
         musicHelper.destroy();
         findViewById(R.id.image_button_music).clearAnimation();
+        controller.handleExit();
         BleManager.getInstance().disconnectAllDevice();
     }
     @Override
@@ -106,9 +108,13 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     /**
      * 蓝牙连接回调
      */
+    private Handler reconnectHandler = new Handler();//重连蓝牙
     private BleGattCallback bleGattCallback = new BleGattCallback() {
         @Override
         public void onStartConnect() {
+            progressDialog = new ProgressDialog(mContext);
+            progressDialog.setTitle(null);
+            progressDialog.setMessage("正在连接蓝牙设备，请稍等...");
             progressDialog.show();
         }
         @Override
@@ -116,6 +122,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             Log.e(TAG,"BleGattCallback: onConnectFail");
             progressDialog.dismiss();
             Toast.makeText(getApplicationContext(),"BleGattCallback: onConnectFail",Toast.LENGTH_SHORT).show();
+            reconnectHandler.postDelayed(() -> connectBle(), 2000);
         }
         @Override
         public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
@@ -123,6 +130,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             model.setBleDevice(bleDevice);
             //开始交换数据
             BleManager.getInstance().notify(bleDevice, SystemConfig.UUID_SERVICE, SystemConfig.UUID_NOTIFY, bleNotifyCallback);
+            // TODO: 开一个线程记录蓝牙数据1min一次
         }
         @Override
         public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
@@ -306,12 +314,18 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      * @param temp 温度
      */
     @Override
-    public void onTempChange(int channel, int temp) {
-        if (channel == 0) {
-            updateTempDisplay(findViewById(R.id.image_view_temp_0), temp);
-        } else if (channel == 1) {
-            updateTempDisplay(findViewById(R.id.image_view_temp_1), temp);
-        }
+    public void onTempChange(ConsoleModel.Channel channel, int temp) {
+        runOnUiThread(() -> {
+            if (channel == ConsoleModel.Channel.CHANNEL_0) {
+                updateTempDisplay(findViewById(R.id.image_view_temp_0), temp);
+            } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
+                updateTempDisplay(findViewById(R.id.image_view_temp_1), temp);
+            }
+            if(temp >=127 || temp == 85){
+                Toast.makeText(mContext, "通道" + channel + "温感为" + temp + "请检查线路",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -320,7 +334,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      */
     @Override
     public void onMessage(String msg) {
-        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+        runOnUiThread(() -> Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show());
     }
 
     /**
@@ -329,8 +343,15 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      */
     @Override
     public void onTimeSet(int value) {
-        TextView tv = findViewById(R.id.text_view_time);
-        tv.setText(String.format(Locale.CHINA, "%d", value));
+        runOnUiThread(() -> {
+            TextView tv = findViewById(R.id.text_view_time);
+            tv.setText(String.format(Locale.CHINA, "%d分", value));
+            //剩余时间不足1分钟时提示
+            if(value == 1)
+                Toast.makeText(mContext, "剩余时间不足1分钟", Toast.LENGTH_SHORT).show();
+            if(value == 0)
+                finish();
+        });
     }
 
     /**
@@ -340,38 +361,61 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      */
     @Override
     public void onTempSet(ConsoleModel.Channel channel, int value) {
-        TextView tv = null;
-        if (channel == ConsoleModel.Channel.CHANNEL_0) {
-            tv = findViewById(R.id.text_view_temp_0);
-        } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
-            tv = findViewById(R.id.text_view_temp_1);
-        }
-        assert tv != null;
-        tv.setText(String.format(Locale.CHINA, "%d°C", value));
+        runOnUiThread(() -> {
+            TextView tv = null;
+            if (channel == ConsoleModel.Channel.CHANNEL_0) {
+                tv = findViewById(R.id.text_view_temp_0);
+            } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
+                tv = findViewById(R.id.text_view_temp_1);
+            }
+            assert tv != null;
+            tv.setText(String.format(Locale.CHINA, "%d°C", value));
+        });
     }
 
     @Override
     public void onPowerStateChange(ConsoleModel.PowerState powerState) {
-        ImageButton powerButton = findViewById(R.id.image_button_power);
-        TextView tvPowerCn = findViewById(R.id.tv_power_cn);
-        TextView tvPowerEn = findViewById(R.id.tv_power_en);
-        switch (powerState) {
-            case POWER_STATE_RUNNIG:
-                powerButton.setImageResource(R.drawable.icon_console_pause_red_64_64);
-                tvPowerCn.setText("暂停");
-                tvPowerEn.setText("Pause");
-                break;
-            case POWER_STATE_PAUSE:
-                powerButton.setImageResource(R.drawable.icon_console_resume_64_64);
-                tvPowerCn.setText("继续");
-                tvPowerEn.setText("Resume");
-                break;
-            case POWER_STATE_OFF:
-                powerButton.setImageResource(R.drawable.switch_blue_pressed_64_64);
-                tvPowerCn.setText("开始");
-                tvPowerEn.setText("Start");
-                break;
-        }
+        runOnUiThread(() -> {
+            ImageButton powerButton = findViewById(R.id.image_button_power);
+            TextView tvPowerCn = findViewById(R.id.tv_power_cn);
+            TextView tvPowerEn = findViewById(R.id.tv_power_en);
+            switch (powerState) {
+                case POWER_STATE_RUNNIG:
+                    powerButton.setImageResource(R.drawable.icon_console_pause_red_64_64);
+                    tvPowerCn.setText("暂停");
+                    tvPowerEn.setText("Pause");
+                    break;
+                case POWER_STATE_PAUSE:
+                    powerButton.setImageResource(R.drawable.icon_console_resume_64_64);
+                    tvPowerCn.setText("继续");
+                    tvPowerEn.setText("Resume");
+                    break;
+                case POWER_STATE_OFF:
+                    powerButton.setImageResource(R.drawable.switch_blue_pressed_64_64);
+                    tvPowerCn.setText("开始");
+                    tvPowerEn.setText("Start");
+                    break;
+            }
+        });
+    }
+
+    /**
+     * 设备同步回调
+     * @param trueOrFalse 是否同步中
+     */
+    @Override
+    public void onDeviceSync(boolean trueOrFalse) {
+        runOnUiThread(() -> {
+            ProgressDialog waitDialog = new ProgressDialog(mContext);
+            if (trueOrFalse) {
+                waitDialog.setTitle(null);
+                waitDialog.setMessage("设备同步中，请稍等...");
+                waitDialog.setCancelable(false);
+                waitDialog.show();
+            } else {
+                new Handler().postDelayed(waitDialog::dismiss, 1000);//延迟1s关闭对话框
+            }
+        });
     }
 
     /**
