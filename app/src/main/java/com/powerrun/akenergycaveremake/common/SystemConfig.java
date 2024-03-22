@@ -7,7 +7,6 @@ public class SystemConfig {
      *   参数存储的sp名
      */
     public final static String SP_ANKANG_ENERGYCAVE = "SpAnKangEnergyCave";
-    public final static String SPBLENAME = "BLEAddress";
     public final static String DEFAULT_AIR_POWER0 = "defaultAirPower0";
     public final static String DEFAULT_AIR_POWER1 = "defaultAirPower1";
     public final static String DEFAULT_COST_TIME = "defaultCostTime";

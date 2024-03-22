@@ -376,7 +376,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             TextView tvPowerCn = findViewById(R.id.tv_power_cn);
             TextView tvPowerEn = findViewById(R.id.tv_power_en);
             switch (powerState) {
-                case POWER_STATE_RUNNIG:
+                case POWER_STATE_RUNNING:
                     powerButton.setImageResource(R.drawable.icon_console_pause_red_64_64);
                     tvPowerCn.setText("暂停");
                     tvPowerEn.setText("Pause");

@@ -46,12 +46,12 @@ public class DeployInfoView extends LinearLayout implements View.OnClickListener
         int defaultPower0 = sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER0, SystemConfig.defaultChan0Level);
         int defaultPower1 = sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER1, SystemConfig.defaultChan1Level);
         int defaultCostTime = sharedPreferences.getInt(SystemConfig.DEFAULT_COST_TIME, SystemConfig.defaultCostTime);
-        String defaultPowerType = sharedPreferences.getString(SystemConfig.DEFAULT_POWER_TYPE, "new_power");
+        int defaultPowerType = sharedPreferences.getInt(SystemConfig.DEFAULT_POWER_TYPE, SystemConfig.defaultPowerType);
 
         spPower0.setSelection(defaultPower0);
         spPower1.setSelection(defaultPower1);
-        spSetTime.setSelection(defaultCostTime);
-        spPowerType.setSelection(defaultPowerType.equals("new_power") ? 1 : 0);
+        spSetTime.setSelection(defaultCostTime/5 - 6);
+        spPowerType.setSelection(defaultPowerType);
     }
 
     /**
@@ -80,13 +80,13 @@ public class DeployInfoView extends LinearLayout implements View.OnClickListener
             editor.putInt(SystemConfig.DEFAULT_AIR_POWER0, getPower0());
             editor.putInt(SystemConfig.DEFAULT_AIR_POWER1, getPower1());
             editor.putInt(SystemConfig.DEFAULT_COST_TIME, getSetTime());
-            editor.putString(SystemConfig.DEFAULT_POWER_TYPE, getPowerType());
+            editor.putInt(SystemConfig.DEFAULT_POWER_TYPE, getPowerType());
             editor.apply();
             // 更新默认参数
             SystemConfig.defaultChan0Level = getPower0();
             SystemConfig.defaultChan1Level = getPower1();
             SystemConfig.defaultCostTime = getSetTime();
-            SystemConfig.defaultPowerType = getPowerType().equals("new_power") ? 1 : 0;
+            SystemConfig.defaultPowerType = getPowerType();
             alertDialog.dismiss();
         }
     }
@@ -103,7 +103,7 @@ public class DeployInfoView extends LinearLayout implements View.OnClickListener
     private int getSetTime() {
         return Integer.parseInt(spSetTime.getSelectedItem().toString());
     }
-    private String getPowerType() {
-        return spPowerType.getSelectedItem().toString();
+    private int getPowerType() {
+        return spPowerType.getSelectedItem().toString().equals("new_power") ? 1 : 0;
     }
 }

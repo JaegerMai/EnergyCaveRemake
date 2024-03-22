@@ -3,8 +3,6 @@ package com.powerrun.akenergycaveremake.mvc;
 import com.clj.fastble.data.BleDevice;
 import com.powerrun.akenergycaveremake.common.SystemConfig;
 
-import java.util.UUID;
-
 public class ConsoleModel {
     public enum Channel{
         CHANNEL_0,
@@ -16,7 +14,7 @@ public class ConsoleModel {
     public static final int POWER_TYPE_OLD = 0;
     /**--------------------电源状态----------------------------**/
     public enum PowerState{
-        POWER_STATE_RUNNIG,
+        POWER_STATE_RUNNING,
         POWER_STATE_PAUSE,
         POWER_STATE_OFF,
     }

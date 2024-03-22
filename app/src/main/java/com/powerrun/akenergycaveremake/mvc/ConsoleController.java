@@ -117,7 +117,7 @@ public class ConsoleController {
     }
     private void timeChange(int action){
         Log.i(TAG, "timeChange: " + action + "," + model.getPowerState());
-        if(model.getPowerState() == ConsoleModel.PowerState.POWER_STATE_RUNNIG){
+        if(model.getPowerState() == ConsoleModel.PowerState.POWER_STATE_RUNNING){
             //按照能量仓逻辑应先暂停机器才能设置时间
             writeDataToDevice(MyMessage.STOP_CODE);
         }
@@ -164,7 +164,7 @@ public class ConsoleController {
             case POWER_STATE_PAUSE:
 
                 break;
-            case POWER_STATE_RUNNIG:
+            case POWER_STATE_RUNNING:
 
                 break;
         }
@@ -250,7 +250,7 @@ public class ConsoleController {
         int isRunning = (data[3] & 0x01);
         //判断运行状态
         if(powerState == 1 && isRunning == 1){
-            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNIG);
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
             needSync = false;
         } else if(powerState == 1 && isRunning == 0){
             model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
