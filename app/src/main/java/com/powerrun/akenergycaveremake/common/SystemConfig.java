@@ -1,14 +1,12 @@
 package com.powerrun.akenergycaveremake.common;
 
-import java.util.UUID;
-
 public class SystemConfig {
     public static String mBLEName="AnKangConsole";
     public static String mBLEAddress = "";
     /**
      *   参数存储的sp名
      */
-    public final static String SP_ANKANG_EnergyCave = "SpAnKangEnergyCave";
+    public final static String SP_ANKANG_ENERGYCAVE = "SpAnKangEnergyCave";
     public final static String SPBLENAME = "BLEAddress";
     public final static String DEFAULT_AIR_POWER0 = "defaultAirPower0";
     public final static String DEFAULT_AIR_POWER1 = "defaultAirPower1";

@@ -28,7 +28,7 @@ public class ConsoleController {
      * 初始化能量仓参数
      */
     private void initParams(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(SystemConfig.SP_ANKANG_EnergyCave, MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SystemConfig.SP_ANKANG_ENERGYCAVE, MODE_PRIVATE);
         model.setPower0(sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER0, SystemConfig.defaultChan0Level));
         model.setPower1(sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER1, SystemConfig.defaultChan1Level));
         model.setTimeRemain(sharedPreferences.getInt(SystemConfig.DEFAULT_COST_TIME, SystemConfig.defaultCostTime));

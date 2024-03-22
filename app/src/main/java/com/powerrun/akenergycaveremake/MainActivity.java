@@ -43,33 +43,30 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         //初始化权限
         initPermissions();
-        //初始化参数
-        initParams();
         //初始化蓝牙
         initBluetooth();
         ImageButton imageButtonConsole = findViewById(R.id.image_button_console);
-        imageButtonConsole.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (readDeviceName().equals("")) {
-                    BleManager.getInstance().scan(bleScanCallback);
-                } else {
-                    SystemConfig.mBLEName = readDeviceName();
-                    SystemConfig.mBLEAddress = readDeviceAddr();
-                    Log.i(TAG, "mBLEName:" + SystemConfig.mBLEName + ",mBLEAddress:" + SystemConfig.mBLEAddress);
-                    Intent intent = new Intent(MainActivity.this, ConsoleActivity.class);
-                    startActivity(intent);
-                }
+        imageButtonConsole.setOnClickListener(view -> {
+            if (readDeviceName().equals("")) {
+                BleManager.getInstance().scan(bleScanCallback);
+            } else {
+                SystemConfig.mBLEName = readDeviceName();
+                SystemConfig.mBLEAddress = readDeviceAddr();
+                Log.i(TAG, "mBLEName:" + SystemConfig.mBLEName + ",mBLEAddress:" + SystemConfig.mBLEAddress);
+                Intent intent = new Intent(MainActivity.this, ConsoleActivity.class);
+                startActivity(intent);
             }
         });
-        imageButtonConsole.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                clearDeviceInfo();
-                Toast.makeText(MainActivity.this, "请重新设置参数", Toast.LENGTH_SHORT).show();
-                // TODO 长按修改能量仓参数
-                return true;
-            }
+        //长按进行默认参数设置
+        imageButtonConsole.setOnLongClickListener(view -> {
+            clearDeviceInfo();
+            Toast.makeText(MainActivity.this, "请重新设置参数", Toast.LENGTH_SHORT).show();
+            AlertDialog dialog = new AlertDialog.Builder(MainActivity.this).setTitle("配置参数").create();
+            DeployInfoView deployInfoView = new DeployInfoView(MainActivity.this, null);
+            dialog.setView(deployInfoView);
+            deployInfoView.setAlertDialog(dialog);
+            dialog.show();
+            return true;
         });
     }
 
@@ -78,11 +75,6 @@ public class MainActivity extends BaseActivity {
         super.onDestroy();
         BleManager.getInstance().disconnectAllDevice();
         BleManager.getInstance().destroy();
-    }
-
-    //初始化能量仓参数
-    private void initParams() {
-        //TODO 从SharedPreferences中读取能量仓参数
     }
 
     private void saveDeviceInfo(String name, String addr) {
@@ -185,13 +177,10 @@ public class MainActivity extends BaseActivity {
                 deviceNames[i] = mScanResults.get(i).getName();
             }
             //将设备名字显示在ListView中
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
-                            android.R.layout.simple_list_item_1, deviceNames);
-                    bleListView.setAdapter(adapter);
-                }
+            runOnUiThread(() -> {
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this,
+                        android.R.layout.simple_list_item_1, deviceNames);
+                bleListView.setAdapter(adapter);
             });
         }
 

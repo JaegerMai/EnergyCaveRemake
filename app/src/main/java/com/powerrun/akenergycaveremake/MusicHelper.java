@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class MusicHelper {
     private static final String TAG = "MusicHelper";
-    private int[] musicIndex = new int[]{
+    private final int[] musicIndex = new int[]{
             R.raw.music_1_yunning,
             R.raw.music_2_hehe,
             R.raw.music_3_tianjian,
@@ -22,12 +22,7 @@ public class MusicHelper {
         mContext = context;
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setLooping(true);
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.start();
-            }
-        });
+        mediaPlayer.setOnPreparedListener(MediaPlayer::start);
     }
     public void destroy() {
         Log.i(TAG, "destroy");
