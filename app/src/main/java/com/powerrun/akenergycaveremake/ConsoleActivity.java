@@ -21,10 +21,12 @@ import android.widget.Toast;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 import com.powerrun.akenergycaveremake.common.BaseActivity;
+import com.powerrun.akenergycaveremake.common.RepeatListener;
 import com.powerrun.akenergycaveremake.common.SystemConfig;
 import com.powerrun.akenergycaveremake.mvc.ConsoleController;
 import com.powerrun.akenergycaveremake.mvc.ConsoleModel;
@@ -34,19 +36,17 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class ConsoleActivity extends BaseActivity implements View.OnClickListener, View.OnLongClickListener, ConsoleView {
+public class ConsoleActivity extends BaseActivity implements View.OnClickListener, ConsoleView {
     private static final String TAG = "ConsoleActivity";
     private Context mContext;
     private MusicHelper musicHelper;
     private ProgressDialog progressDialog;
-    private Handler exitLongPressHandler = new Handler();
     private ConsoleController controller;
     private ConsoleModel model;
     private static final String FONT_DIGITAL_7 = "raw" + File.separator
             + "digital-7.ttf";
     //按钮点击和长按事件,使用HashMap存储
-    private HashMap<Integer,Runnable> clickActions = new HashMap<>();
-    private HashMap<Integer,Runnable> longPressActions = new HashMap<>();
+    private final HashMap<Integer,Runnable> clickActions = new HashMap<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,8 +69,11 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         super.onDestroy();
         musicHelper.destroy();
         findViewById(R.id.image_button_music).clearAnimation();
+        controller.stopQueryData();
         controller.handleExit();
-        BleManager.getInstance().disconnectAllDevice();
+        Toast.makeText(mContext, "控制台已终止", Toast.LENGTH_SHORT).show();
+        Handler handler = new Handler();
+        handler.postDelayed(() -> BleManager.getInstance().disconnectAllDevice(),1000);
     }
     @Override
     public void onClick(View view) {
@@ -80,13 +83,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         if(action != null) {
             action.run();
         }
-    }
-
-    @Override
-    public boolean onLongClick(View view) {
-        // TODO: 实现长按逻辑
-        Toast.makeText(getApplicationContext(), "长按了"+view.getId(), Toast.LENGTH_SHORT).show();
-        return true;
     }
 
     /**
@@ -104,10 +100,14 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     /**
      * 蓝牙连接回调
      */
-    private Handler reconnectHandler = new Handler();//重连蓝牙
-    private BleGattCallback bleGattCallback = new BleGattCallback() {
+    private final Handler reconnectHandler = new Handler();//重连蓝牙
+    private final BleGattCallback bleGattCallback = new BleGattCallback() {
         @Override
         public void onStartConnect() {
+            //显示连接进度条
+            if(isFinishing()) {
+                return;
+            }
             progressDialog = new ProgressDialog(mContext);
             progressDialog.setTitle(null);
             progressDialog.setMessage("正在连接蓝牙设备，请稍等...");
@@ -117,6 +117,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         public void onConnectFail(BleDevice bleDevice, BleException exception) {
             Log.e(TAG,"BleGattCallback: onConnectFail");
             progressDialog.dismiss();
+            controller.stopQueryData();
             Toast.makeText(getApplicationContext(),"BleGattCallback: onConnectFail",Toast.LENGTH_SHORT).show();
             reconnectHandler.postDelayed(() -> connectBle(), 2000);
         }
@@ -125,12 +126,14 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             progressDialog.dismiss();
             model.setBleDevice(bleDevice);
             //开始交换数据
-            BleManager.getInstance().notify(bleDevice, SystemConfig.UUID_SERVICE, SystemConfig.UUID_NOTIFY, bleNotifyCallback);
+            BleManager.getInstance().notify(bleDevice, SystemConfig.UUID_SERVICE, SystemConfig.UUID_NOTIFY,bleNotifyCallback);
+            controller.startQueryData();
             // TODO: 开一个线程记录蓝牙数据1min一次
         }
         @Override
         public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
             progressDialog.dismiss();
+            controller.stopQueryData();
             //清空蓝牙数据队列
             controller.clearDataQueue();
             if (isActiveDisConnected) {
@@ -140,7 +143,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             }
         }
     };
-    private BleNotifyCallback bleNotifyCallback = new BleNotifyCallback() {
+    private final BleNotifyCallback bleNotifyCallback = new BleNotifyCallback() {
         @Override
         public void onNotifySuccess() {
             Log.i(TAG, "onNotifySuccess: ");
@@ -159,8 +162,20 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      */
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        showExitDialog();
+        Log.i(TAG, "短按退出程序");
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
+                .setTitle("警告")
+                .setMessage("确定要退出吗？")
+                .setPositiveButton("确定", (dialog, which) -> {
+                    //蓝牙发送退出指令
+                    super.onBackPressed();
+                    controller.stopQueryData();
+                    controller.handleExit();
+                    dialog.dismiss();
+                    finish();
+                })
+                .setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
     }
     /**
      * 打开音乐选择对话框
@@ -180,54 +195,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 });
         builder.create().show();
     }
-    //退出按钮长按标志
-    private boolean isExitLongPress = false;
-    /**
-     * 退出按钮长按监听
-     * 长按6秒会清楚设备连接并退出程序
-     * 短按会弹出退出提示框
-     */
-    private View.OnTouchListener exitLongPressListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    isExitLongPress = false;
-                    exitLongPressHandler.postDelayed(exitLongPressRunnable, 6000);//长按六秒后执行
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if(!isExitLongPress) {
-                        exitLongPressHandler.removeCallbacks(exitLongPressRunnable);
-                        showExitDialog();
-                    }
-                    break;
-            }
-            return true;
-        }
-    };
-    //退出按钮长按事件
-    private Runnable exitLongPressRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.i(TAG, "长按退出程序");
-            isExitLongPress = true;
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
-                    .setTitle("警告")
-                    .setMessage("是否要清除与该设备的链接并退出？")
-                    .setNegativeButton("取消", (dialog, which) -> {
-                        dialog.dismiss();
-                    })
-                    .setPositiveButton("确定", (dialog, which) -> {
-                        //清除蓝牙设备连接，并关机
-                        controller.clearDeviceInfo(mContext);
-                        controller.handleExit();
-                        dialog.dismiss();
-                        finish();
-                    });
-            builder.create().show();
-        }
-    };
-
     /**
      * 初始化UI
      */
@@ -241,8 +208,15 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 findViewById(R.id.image_button_temp_add_1),
                 findViewById(R.id.image_button_temp_dec_1),
                 findViewById(R.id.image_button_power),
-                findViewById(R.id.image_button_exit),
                 findViewById(R.id.image_button_music)
+        };
+        ImageButton[] longPressButtons = new ImageButton[]{
+                findViewById(R.id.image_button_time_add),
+                findViewById(R.id.image_button_time_dec),
+                findViewById(R.id.image_button_temp_add_0),
+                findViewById(R.id.image_button_temp_dec_0),
+                findViewById(R.id.image_button_temp_add_1),
+                findViewById(R.id.image_button_temp_dec_1)
         };
         TextView[] textViews = new TextView[]{
                 findViewById(R.id.text_view_time),
@@ -253,10 +227,11 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         // 设置点击事件
         for (ImageButton button : buttons) {
             button.setOnClickListener(this);
-            button.setOnLongClickListener(this);
         }
-        findViewById(R.id.image_button_exit).setOnTouchListener(exitLongPressListener);
-
+        // 设置长按事件
+        for(ImageButton button : longPressButtons){
+            button.setOnTouchListener(new RepeatListener(400, 200, this));
+        }
         // 为每个按钮ID添加对应的点击事件
         clickActions.put(R.id.image_button_time_add, controller::handleTimeAdd);
         clickActions.put(R.id.image_button_time_dec, controller::handleTimeDec);
@@ -266,6 +241,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         clickActions.put(R.id.image_button_temp_dec_1, controller::handleTempDec1);
         clickActions.put(R.id.image_button_music, this::openMusicDialog);
         clickActions.put(R.id.image_button_power, controller::handlePowerButton);
+
 
         // 设置字体样式
         AssetManager assets = getApplication().getAssets();
@@ -284,26 +260,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         findViewById(R.id.image_button_music).startAnimation(rotateAnimation);
         //TODO: 蓝牙图标，显示连接状态
     }
-    /**
-     * 退出提示框
-     */
-    private void showExitDialog() {
-        Log.i(TAG, "短按退出程序");
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
-                .setTitle("警告")
-                .setMessage("确定要退出吗？")
-                .setPositiveButton("确定", (dialog, which) -> {
-                    //蓝牙发送退出指令
-                    controller.handleExit();
-                    dialog.dismiss();
-                    finish();
-                })
-                .setNegativeButton("取消", (dialog, which) -> {
-                    dialog.dismiss();
-                });
-        builder.create().show();
-    }
-
     /**
      * 温感温度变化回调
      * @param channel 通道
@@ -343,10 +299,16 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             TextView tv = findViewById(R.id.text_view_time);
             tv.setText(String.format(Locale.CHINA, "%d分", value));
             //剩余时间不足1分钟时提示
-            if(value == 1)
+            if(value == 1) {
                 Toast.makeText(mContext, "剩余时间不足1分钟", Toast.LENGTH_SHORT).show();
-            if(value == 0)
-                finish();
+                Handler handler = new Handler();
+                handler.postDelayed(() -> {
+                    if (value == 0) {
+                        Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }, 60 * 1000);
+            }
         });
     }
 
@@ -377,19 +339,14 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             TextView tvPowerEn = findViewById(R.id.tv_power_en);
             switch (powerState) {
                 case POWER_STATE_RUNNING:
-                    powerButton.setImageResource(R.drawable.icon_console_pause_red_64_64);
-                    tvPowerCn.setText("暂停");
-                    tvPowerEn.setText("Pause");
-                    break;
-                case POWER_STATE_PAUSE:
-                    powerButton.setImageResource(R.drawable.icon_console_resume_64_64);
-                    tvPowerCn.setText("继续");
-                    tvPowerEn.setText("Resume");
+                    powerButton.setBackgroundResource(R.drawable.switch_grey_pressed_64_64);
+                    tvPowerCn.setText(R.string.stop_cn);
+                    tvPowerEn.setText(R.string.stop);
                     break;
                 case POWER_STATE_OFF:
-                    powerButton.setImageResource(R.drawable.switch_blue_pressed_64_64);
-                    tvPowerCn.setText("开始");
-                    tvPowerEn.setText("Start");
+                    powerButton.setBackgroundResource(R.drawable.switch_blue_pressed_64_64);
+                    tvPowerCn.setText(R.string.start_cn);
+                    tvPowerEn.setText(R.string.start);
                     break;
             }
         });
@@ -399,11 +356,12 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
      * 设备同步回调
      * @param trueOrFalse 是否同步中
      */
+    ProgressDialog waitDialog;
     @Override
     public void onDeviceSync(boolean trueOrFalse) {
         runOnUiThread(() -> {
-            ProgressDialog waitDialog = new ProgressDialog(mContext);
             if (trueOrFalse) {
+                waitDialog = new ProgressDialog(mContext);
                 waitDialog.setTitle(null);
                 waitDialog.setMessage("设备同步中，请稍等...");
                 waitDialog.setCancelable(false);
@@ -427,7 +385,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 R.drawable.icon_console_weatherglass_5_39_104
         };
         // 30-45度之间显示不同的图标
-        int index = temp / 5;
+        int index = temp / 5 - 6 + 1;
         if (index < 0) {
             index = 0;
         } else if (index > 4) {

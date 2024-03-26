@@ -4,6 +4,8 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.clj.fastble.BleManager;
@@ -18,11 +20,29 @@ public class ConsoleController {
     private ConsoleModel model;
     private ConsoleView view;
     private BluetoothDataProcessor processor;
+    //每隔1s向设备发送一次数据查询
+    private android.os.Handler mHandler = new Handler(Looper.getMainLooper());
+    private Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            writeDataToDevice(MyMessage.SENT);
+            mHandler.postDelayed(this, 1000);
+        }
+    };
     public ConsoleController(ConsoleModel model, ConsoleView view, Context context) {
         this.model = model;
         this.view = view;
         initParams(context);
         processor = new BluetoothDataProcessor(this::updateStatus);
+    }
+    /**
+     * 每隔1s向设备发送一次数据查询
+     */
+    public void startQueryData(){
+        mHandler.postDelayed(mRunnable, 1000);
+    }
+    public void stopQueryData(){
+        mHandler.removeCallbacks(mRunnable);
     }
     /**
      * 初始化能量仓参数
@@ -151,7 +171,6 @@ public class ConsoleController {
      * 开关处理逻辑
      */
     public void handlePowerButton(){
-        //TODO: 电源按钮处理逻辑
         ConsoleModel.PowerState currentState = model.getPowerState();
         switch (currentState){
             case POWER_STATE_OFF:
@@ -161,11 +180,11 @@ public class ConsoleController {
                     writeDataToDevice(MyMessage.SHDN_CODE);
                     writeDataToDevice(MyMessage.SHDN_CODE);//开机->进入on_stop
                 }
-            case POWER_STATE_PAUSE:
-
-                break;
             case POWER_STATE_RUNNING:
-
+                if (model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_OFF) {
+                    writeDataToDevice(MyMessage.SHDN_CODE);
+                    model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
+                }
                 break;
         }
         view.onPowerStateChange(model.getPowerState());
@@ -187,6 +206,7 @@ public class ConsoleController {
      * @param data 蓝牙接收到的数据
      */
     public void addData(byte [] data){
+        Log.i(TAG, "addData");
         processor.addData(data);
     }
     /**
@@ -216,15 +236,6 @@ public class ConsoleController {
         //返回温度较低的值
         return Math.min(channelA, channelB);
     }
-    /**
-     * 清除设备信息
-     */
-    public void clearDeviceInfo(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("save_device", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
-        editor.apply();
-    }
     /**更新设备状态
      *  第1 2字节是功率门限制
         第3字节是剩余时间计数器
@@ -239,48 +250,51 @@ public class ConsoleController {
     //储存上一次调整温度挡位的时间
     private long lastAdjustTime = 0;
     public void updateStatus(byte[] data){
-        //判断数据是否异常
-        if(null == data || data.length < 16){
-            Log.e(TAG, "processBleData: 数据异常");
-            return;
-        }
+            //判断数据是否异常
+            if(null == data || data.length < 16){
+                Log.e(TAG, "processBleData: 数据异常");
+                return;
+            }
 
-        //bit 1 开关机 10开机暂停，11开机运行
-        int powerState = (data[3] & 0x02) >> 1;
-        int isRunning = (data[3] & 0x01);
-        //判断运行状态
-        if(powerState == 1 && isRunning == 1){
-            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
-            needSync = false;
-        } else if(powerState == 1 && isRunning == 0){
-            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
-            needSync = true;
-        } else {
-            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
-        }
-        view.onPowerStateChange(model.getPowerState());//同步电源UI
+            //bit 1 开关机 10开机暂停，11开机运行
+            int powerState = (data[3] & 0x02) >> 1;
+            int isRunning = (data[3] & 0x01);
+            //判断运行状态
+            if(powerState == 1 && isRunning == 1){
+                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
+                needSync = false;
+            } else if(powerState == 1 && isRunning == 0){
+                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
+            } else {
+                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
+                needSync = true;
+                return;
+            }
+            view.onPowerStateChange(model.getPowerState());//同步电源UI
 
-        //开机后先同步设备数据到能量仓
-        if(needSync){
-            syncDataToDevice(data);
-        }
+            //开机后先同步设备数据到能量仓
+            if(needSync){
+                syncDataToDevice(data);
+            }
 
-        //解析数据
-        model.setPower0(data[0]);//通道0功率
-        model.setPower1(data[1]);//通道1功率
-        model.setTimeRemain(data[2]);//剩余时间
-        model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
-        model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
-        view.onTimeSet(model.getTimeRemain());//同步时间UI
-        view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
-        view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());
-        //同步温度设定值
-        model.setTargetTemp0(data[4]);//通道0目标温度
-        model.setTargetTemp1(data[5]);//通道1目标温度
-        view.onTempSet(ConsoleModel.Channel.CHANNEL_0, model.getTargetTemp0());//同步温度UI
-        view.onTempSet(ConsoleModel.Channel.CHANNEL_1, model.getTargetTemp1());//同步温度UI
+            //解析数据
+            model.setPower0(data[0]);//通道0功率
+            model.setPower1(data[1]);//通道1功率
+            if(!needSync) {
+                model.setTimeRemain(data[2]);//剩余时间，同步完成后才更新
+            }
+            model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
+            model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
+            view.onTimeSet(model.getTimeRemain());//同步时间UI
+            view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
+            view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());
+            //同步温度设定值
+            model.setTargetTemp0(data[4]);//通道0目标温度
+            model.setTargetTemp1(data[5]);//通道1目标温度
+            view.onTempSet(ConsoleModel.Channel.CHANNEL_0, model.getTargetTemp0());//同步温度UI
+            view.onTempSet(ConsoleModel.Channel.CHANNEL_1, model.getTargetTemp1());//同步温度UI
 
-        //调整温度挡位, 60s调整一次
+            //调整温度挡位, 60s调整一次
         long currentTime = System.currentTimeMillis();
         if(currentTime - lastAdjustTime > 60 * 1000){
             adjustBothTempLevels(model.getCurrentTemp0(), model.getCurrentTemp1());
@@ -306,7 +320,7 @@ public class ConsoleController {
         //同步数据到设备
         sendSignalToDevice(model.getPower0() - devicePower0, MyMessage.PW_ADD_CODE_0, MyMessage.PW_DEC_CODE_0);
         sendSignalToDevice(model.getPower1() - devicePower1, MyMessage.PW_ADD_CODE_1, MyMessage.PW_DEC_CODE_1);
-        sendSignalToDevice(model.getTimeRemain() - deviceTime, MyMessage.TM_ADD_CODE, MyMessage.TM_DEC_CODE);
+        sendSignalToDevice((model.getTimeRemain() - deviceTime)/5, MyMessage.TM_ADD_CODE, MyMessage.TM_DEC_CODE);
         sendSignalToDevice(model.getTargetTemp0() - deviceTemp0, MyMessage.T_ADD_CH_0, MyMessage.T_DEC_CH_0);
         sendSignalToDevice(model.getTargetTemp1() - deviceTemp1, MyMessage.T_ADD_CH_1, MyMessage.T_DEC_CH_1);
         Log.i(TAG, "syncDataToDevice: 同步数据到设备完成");
@@ -373,7 +387,7 @@ public class ConsoleController {
                 new BleWriteCallback() {
                     @Override
                     public void onWriteSuccess(int current, int total, byte[] justWrite) {
-                        Log.i(TAG, "onWriteSuccess: 写入成功");
+                        Log.i(TAG, "onWriteSuccess: 写入成功：" + MyMessage.getMessageFromByte(justWrite));
                     }
                     @Override
                     public void onWriteFailure(BleException exception) {

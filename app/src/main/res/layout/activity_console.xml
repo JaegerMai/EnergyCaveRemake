@@ -214,12 +214,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_weight="1">
+
             <ImageButton
                 android:id="@+id/image_button_power"
                 android:layout_width="43dp"
                 android:layout_height="43dp"
                 android:layout_gravity="center"
-                android:background="@drawable/switch_grey_pressed_64_64"/>
+                android:background="@drawable/switch_blue_pressed_64_64" />
 
             <TextView
                 android:id="@+id/tv_power_cn"
@@ -240,33 +241,7 @@
                 android:textSize="10sp" />
         </LinearLayout>
 
-        <!--退出-->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1">
-            <ImageButton
-                android:id="@+id/image_button_exit"
-                android:layout_width="43dp"
-                android:layout_height="43dp"
-                android:layout_gravity="center"
-                android:background="@drawable/icon_exit_pressed_64_64"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="退出"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:textSize="16sp"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="EXIT"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:textSize="10sp"/>
-        </LinearLayout>
+
         <!--音乐控制-->
         <LinearLayout
             android:layout_width="0dp"

@@ -211,7 +211,7 @@ public class MainActivity extends BaseActivity {
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
     };
     //权限申请码
     private static final int PERMISSION_REQUEST_CODE = 100;
@@ -221,7 +221,7 @@ public class MainActivity extends BaseActivity {
     private void initPermissions() {
         for(String permission : permissions) {
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSION_REQUEST_CODE);
+                ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
             }
         }
     }
