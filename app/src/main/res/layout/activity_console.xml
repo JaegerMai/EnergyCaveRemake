@@ -270,5 +270,34 @@
                 android:layout_gravity="center"
                 android:textSize="10sp"/>
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <com.powerrun.akenergycaveremake.common.TemperatureGaugeView
+                android:id="@+id/temperature_gauge_view"
+                android:layout_width="43dp"
+                android:layout_height="43dp"
+                android:layout_gravity="center" />
+            <TextView
+                android:id="@+id/tv_embedded_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="未连接"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:textSize="16sp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="传感器温度"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:textSize="10sp"/>
+        </LinearLayout>
     </LinearLayout>
+
+
 </LinearLayout>

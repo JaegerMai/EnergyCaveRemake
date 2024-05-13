@@ -1,0 +1,57 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class ConsoleController {
+    -static final String TAG
+    -ConsoleModel model
+    -ConsoleView view
+    -BluetoothDataProcessor processor
+    -Handler mHandler
+    -Runnable mRunnable
+    --
+    +ConsoleController(ConsoleModel model, ConsoleView view, Context context)
+    +startQueryData(): void
+    +stopQueryData(): void
+    -initParams(Context context): void
+    +handleTempAdd0(): void
+    +handleTempDec0(): void
+    +handleTempAdd1(): void
+    +handleTempDec1(): void
+    -tempChange(int action, ConsoleModel.Channel channel): void
+    +handleTimeAdd(): void
+    +handleTimeDec(): void
+    -timeChange(int action): void
+    +handlePowerButton(): void
+    +handleExit(): void
+    +addData(byte [] data): void
+    +clearDataQueue(): void
+    +getCurrentTemp(int channelA, int channelB): int
+    +updateStatus(byte[] data): void
+    -syncDataToDevice(byte[] data): void
+    -sendSignalToDevice(int difference, String addCode, String decCode): void
+    -adjustTempLevel(int currentTemp,
+    int targetTemp, int power, String powerDecCode, String powerAddCode): int
+    -adjustBothTempLevels(int currentTemp0, int currentTemp1): void
+    +writeDataToDevice(String data): void
+}
+class ConsoleModel {
+    -PowerState powerState
+    -int timeRemain
+    ...
+    --
+    +getPowerState(): PowerState
+    +setPowerState(PowerState powerState): void
+    +getTimeRemain(): int
+    ...
+}
+interface ConsoleView {
+    --
+     +onTempChange(ConsoleModel.Channel channel, int temp)
+     +onMessage(String msg)
+     +onTimeSet(int value)
+    ...
+ }
+ConsoleController ..> ConsoleModel : has
+ConsoleController ..> ConsoleView : has
+
+@enduml

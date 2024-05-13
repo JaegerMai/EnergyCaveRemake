@@ -1,0 +1,29 @@
+@startuml
+ 'https://plantuml.com/class-diagram
+
+ class MainActivity {
+     -static final String TAG
+     -static final int REQUEST_ENABLE_BT
+     -ListView bleListView
+     -AlertDialog scanListDialog
+     --
+     +onCreate(Bundle savedInstanceState)
+     +onDestroy()
+     -initBluetooth()
+     -initPermissions()
+     -saveDeviceInfo(String name, String addr)
+     -readDeviceName(): String
+     -readDeviceAddr(): String
+     -clearDeviceInfo()
+     -BleScanCallback bleScanCallback
+ }
+
+ class BaseActivity {
+     --
+     +onCreate(Bundle savedInstanceState)
+     +onDestroy()
+ }
+
+ MainActivity --|> BaseActivity
+
+ @enduml

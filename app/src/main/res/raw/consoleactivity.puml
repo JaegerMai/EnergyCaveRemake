@@ -1,0 +1,48 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class ConsoleActivity {
+    -static final String TAG
+    -Context mContext
+    -MusicHelper musicHelper
+    -ProgressDialog progressDialog
+    -ConsoleController controller
+    -ConsoleModel model
+    -static final String FONT_DIGITAL_7
+    -HashMap<Integer,Runnable> clickActions
+    --
+    +onCreate(Bundle savedInstanceState)
+    +onDestroy()
+    +onClick(View view)
+    -connectBle()
+    +onBackPressed()
+    -openMusicDialog()
+    -initUI()
+    +onTempChange(ConsoleModel.Channel channel, int temp)
+    +onMessage(String msg)
+    +onTimeSet(int value)
+    +onTempSet(ConsoleModel.Channel channel, int value)
+    +onPowerStateChange(ConsoleModel.PowerState powerState)
+    +onDeviceSync(boolean trueOrFalse)
+    -updateTempDisplay(ImageView iv, int temp)
+}
+
+ class BaseActivity {
+     --
+     +onCreate(Bundle savedInstanceState)
+     +onDestroy()
+ }
+
+interface ConsoleView {
+    +onTempChange(ConsoleModel.Channel channel, int temp)
+    +onMessage(String msg)
+    +onTimeSet(int value)
+    +onTempSet(ConsoleModel.Channel channel, int value)
+    +onPowerStateChange(ConsoleModel.PowerState powerState)
+    +onDeviceSync(boolean trueOrFalse)
+}
+
+ConsoleActivity --|> BaseActivity
+ConsoleActivity ..> ConsoleView : implements
+
+@enduml

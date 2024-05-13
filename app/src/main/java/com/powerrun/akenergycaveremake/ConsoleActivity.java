@@ -2,8 +2,14 @@ package com.powerrun.akenergycaveremake;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -14,8 +20,11 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,13 +37,21 @@ import com.clj.fastble.exception.BleException;
 import com.powerrun.akenergycaveremake.common.BaseActivity;
 import com.powerrun.akenergycaveremake.common.RepeatListener;
 import com.powerrun.akenergycaveremake.common.SystemConfig;
+import com.powerrun.akenergycaveremake.common.TemperatureGaugeView;
 import com.powerrun.akenergycaveremake.mvc.ConsoleController;
 import com.powerrun.akenergycaveremake.mvc.ConsoleModel;
 import com.powerrun.akenergycaveremake.mvc.ConsoleView;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
 public class ConsoleActivity extends BaseActivity implements View.OnClickListener, ConsoleView {
     private static final String TAG = "ConsoleActivity";
@@ -47,6 +64,9 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             + "digital-7.ttf";
     //按钮点击和长按事件,使用HashMap存储
     private final HashMap<Integer,Runnable> clickActions = new HashMap<>();
+    TemperatureGaugeView temperatureGaugeView;
+    TextView tvEmbeddedTemp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,8 +138,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             Log.e(TAG,"BleGattCallback: onConnectFail");
             progressDialog.dismiss();
             controller.stopQueryData();
-            Toast.makeText(getApplicationContext(),"BleGattCallback: onConnectFail",Toast.LENGTH_SHORT).show();
-            reconnectHandler.postDelayed(() -> connectBle(), 2000);
+            //Toast.makeText(getApplicationContext(),"BleGattCallback: onConnectFail",Toast.LENGTH_SHORT).show();
+            reconnectHandler.postDelayed(() -> connectBle(), 20000);
         }
         @Override
         public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
@@ -259,6 +279,17 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         rotateAnimation.setInterpolator(new LinearInterpolator());
         findViewById(R.id.image_button_music).startAnimation(rotateAnimation);
         //TODO: 蓝牙图标，显示连接状态
+
+        //嵌入式传感器回传显示
+        temperatureGaugeView = findViewById(R.id.temperature_gauge_view);
+        temperatureGaugeView.setCurrentTemp(20);
+        temperatureGaugeView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scanEmbeddedDevice();
+            }
+        });
+        tvEmbeddedTemp = findViewById(R.id.tv_embedded_temp);
     }
     /**
      * 温感温度变化回调
@@ -372,6 +403,14 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         });
     }
 
+    @Override
+    public void onEmbeddedTempChange(int temp) {
+        runOnUiThread(() -> {
+            temperatureGaugeView.setCurrentTemp(temp);
+            tvEmbeddedTemp.setText(String.format(Locale.CHINA, "%d°C", temp));
+        });
+    }
+
     /**
      * 根据传感器返回的数据修改温度显示
      * 分别在30,35,40,45度时显示不同的图标
@@ -393,4 +432,97 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         }
         iv.setImageResource(tempIcons[index]);
     }
+
+    /**
+     * 扫描嵌入式设备
+     */
+    private void scanEmbeddedDevice() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            return;
+        }
+        if (!bluetoothAdapter.isEnabled()) {
+            return;
+        }
+
+        List<String> deviceList = new ArrayList<>();
+        Set<String> deviceAddresses = new HashSet<>();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(mContext, android.R.layout.simple_list_item_1, deviceList);
+        ListView listView = new ListView(mContext);
+        listView.setAdapter(adapter);
+
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    String deviceName = device.getName();
+                    if(deviceName == null || deviceName.isEmpty() || deviceName.equals("null")) {
+                        return;
+                    }
+                    String deviceHardwareAddress = device.getAddress(); // MAC address
+                    if (!deviceAddresses.contains(deviceHardwareAddress)) {
+                        deviceAddresses.add(deviceHardwareAddress);
+                        deviceList.add(deviceName + "\n" + deviceHardwareAddress);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        }, filter);
+
+        // Start discovery
+        bluetoothAdapter.startDiscovery();
+
+        // Set the item click listener
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Cancel discovery
+                bluetoothAdapter.cancelDiscovery();
+
+                // Get the selected device address
+                String item = deviceList.get(position);
+                String deviceAddress = item.split("\n")[1];
+
+                // Connect to the device
+                BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
+                try {
+                    // Standard SerialPortService ID
+                    UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+                    BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
+                    socket.connect();
+
+                    new Thread(() -> {
+                        InputStream inputStream;
+                        try {
+                            inputStream = socket.getInputStream();
+                            byte[] buffer = new byte[1024];
+                            int bytesRead;
+                            while (true) {
+                                bytesRead = inputStream.read(buffer);
+                                if (bytesRead != -1) {
+                                    String receivedData = new String(buffer, 0, bytesRead);
+                                    int temp = Integer.parseInt(receivedData.trim());
+                                    onEmbeddedTempChange(temp);
+                                }
+                                Thread.sleep(1000);
+                            }
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // Show the dialog
+        new AlertDialog.Builder(mContext)
+                .setView(listView)
+                .show();
+    }
 }
+

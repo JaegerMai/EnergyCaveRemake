@@ -250,6 +250,7 @@ public class ConsoleController {
     //储存上一次调整温度挡位的时间
     private long lastAdjustTime = 0;
     public void updateStatus(byte[] data){
+
             //判断数据是否异常
             if(null == data || data.length < 16){
                 Log.e(TAG, "processBleData: 数据异常");

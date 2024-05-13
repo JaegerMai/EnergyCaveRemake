@@ -7,4 +7,5 @@ public interface ConsoleView {
     void onTempSet(ConsoleModel.Channel channel, int value);
     void onPowerStateChange(ConsoleModel.PowerState powerState);
     void onDeviceSync(boolean trueOrFalse);
+    void onEmbeddedTempChange(int temp);
 }

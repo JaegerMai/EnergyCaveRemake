@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class ConsoleModel {
+    -PowerState powerState
+    -int timeRemain
+    -int targetTemp0
+    -int targetTemp1
+    -int currentTemp0
+    -int currentTemp1
+    -int power0
+    -int power1
+    -int powerType
+    -BleDevice bleDevice
+    --
+    +getPowerState(): PowerState
+    +setPowerState(PowerState powerState): void
+    +getTimeRemain(): int
+    +getTargetTemp0(): int
+    +getTargetTemp1(): int
+    +getCurrentTemp0(): int
+    +getCurrentTemp1(): int
+    +getPower0(): int
+    +getPower1(): int
+    +getPowerType(): int
+    +setTimeRemain(int timeRemain): void
+    +setTargetTemp0(int targetTemp0): void
+    +setTargetTemp1(int targetTemp1): void
+    +setCurrentTemp0(int currentTemp0): void
+    +setCurrentTemp1(int currentTemp1): void
+    +setPower0(int power0): void
+    +setPower1(int power1): void
+    +setPowerType(int powerType): void
+    +getBleDevice(): BleDevice
+    +setBleDevice(BleDevice bleDevice): void
+}
+
+enum Channel {
+    CHANNEL_0
+    CHANNEL_1
+}
+
+enum PowerState {
+    POWER_STATE_RUNNING
+    POWER_STATE_PAUSE
+    POWER_STATE_OFF
+}
+
+ConsoleModel ..> Channel : has
+ConsoleModel ..> PowerState : has
+
+@enduml
