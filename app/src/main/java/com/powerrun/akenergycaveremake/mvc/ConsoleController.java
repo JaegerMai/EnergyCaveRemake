@@ -396,5 +396,4 @@ public class ConsoleController {
                     }
                 });
     }
-    //TODO: 开一个线程在开始控制的时候记录温感数据，1s一次，原代码里有getStatus方法
 }
