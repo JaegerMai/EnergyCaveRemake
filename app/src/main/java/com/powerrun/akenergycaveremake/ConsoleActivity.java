@@ -30,7 +30,6 @@ import android.widget.Toast;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
-import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
@@ -320,6 +319,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         runOnUiThread(() -> Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show());
     }
 
+    private boolean isToastShown = false; //最后一分钟提示
     /**
      * 设置时间回调
      * @param value 时间
@@ -330,15 +330,18 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             TextView tv = findViewById(R.id.text_view_time);
             tv.setText(String.format(Locale.CHINA, "%d分", value));
             //剩余时间不足1分钟时提示
-            if(value == 1) {
+            if(value == 1 && !isToastShown){
                 Toast.makeText(mContext, "剩余时间不足1分钟", Toast.LENGTH_SHORT).show();
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    if (value == 0) {
-                        Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                }, 60 * 1000);
+                isToastShown = true;
+//                Handler handler = new Handler();
+//                handler.postDelayed(() -> {
+//
+//                }, 60 * 1000);
+            }
+            if (value == 0) {
+                Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
+                isToastShown = false;//时间到后重置
+                finish();
             }
         });
     }

@@ -32,7 +32,7 @@ public class MyMessage {
     public static final int PW_MAX = 5;
     public static final int PW_MIN = 0;
     public static final int TM_MAX = 90;
-    public static final int TM_MIN = 0;
+    public static final int TM_MIN = 5;
 
     private static final Map<String, String> MESSAGE_MAP = new HashMap<>();
 

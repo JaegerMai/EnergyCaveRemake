@@ -3,11 +3,12 @@
     android:background="@drawable/bg_main_1024_768"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <ImageButton
         android:id="@+id/image_button_console"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:background="@drawable/control_machine_voal_btn"
-        android:src = "@drawable/icon_console_100_100"/>
+        android:src="@drawable/icon_console_100_100" />
 </RelativeLayout>

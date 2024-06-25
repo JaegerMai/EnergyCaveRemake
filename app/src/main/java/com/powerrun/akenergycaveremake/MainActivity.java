@@ -219,10 +219,14 @@ public class MainActivity extends BaseActivity {
      * 初始化权限
      */
     private void initPermissions() {
+        List<String> unwarrantedPermissions = new ArrayList<>();
         for(String permission : permissions) {
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
+                unwarrantedPermissions.add(permission);
             }
+        }
+        if (!unwarrantedPermissions.isEmpty()) {
+            ActivityCompat.requestPermissions(this, unwarrantedPermissions.toArray(new String[0]), PERMISSION_REQUEST_CODE);
         }
     }
 
