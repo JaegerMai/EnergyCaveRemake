@@ -27,7 +27,6 @@ import com.clj.fastble.exception.BleException;
 import com.powerrun.akenergycaveremake.common.BaseActivity;
 import com.powerrun.akenergycaveremake.common.RepeatListener;
 import com.powerrun.akenergycaveremake.common.SystemConfig;
-import com.powerrun.akenergycaveremake.common.TemperatureGaugeView;
 import com.powerrun.akenergycaveremake.mvc.ConsoleController;
 import com.powerrun.akenergycaveremake.mvc.ConsoleModel;
 import com.powerrun.akenergycaveremake.mvc.ConsoleView;
@@ -47,6 +46,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             + "digital-7.ttf";
     //按钮点击和长按事件,使用HashMap存储
     private final HashMap<Integer,Runnable> clickActions = new HashMap<>();
+    private AppUsageLogger appUsageLogger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +64,15 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         initUI();
         //连接蓝牙
         connectBle();
+        //记录应用使用时间
+        appUsageLogger = AppUsageLogger.getInstance();
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         musicHelper.destroy();
         findViewById(R.id.image_button_music).clearAnimation();
+        appUsageLogger.stopLogging();
         controller.stopQueryData();
         controller.handleExit();
         Toast.makeText(mContext, "控制台已终止", Toast.LENGTH_SHORT).show();
@@ -170,6 +173,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 .setPositiveButton("确定", (dialog, which) -> {
                     //蓝牙发送退出指令
                     super.onBackPressed();
+                    appUsageLogger.stopLogging();
                     controller.stopQueryData();
                     controller.handleExit();
                     dialog.dismiss();

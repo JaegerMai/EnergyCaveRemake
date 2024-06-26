@@ -11,6 +11,7 @@ import android.util.Log;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.exception.BleException;
+import com.powerrun.akenergycaveremake.AppUsageLogger;
 import com.powerrun.akenergycaveremake.BluetoothDataProcessor;
 import com.powerrun.akenergycaveremake.MyMessage;
 import com.powerrun.akenergycaveremake.common.SystemConfig;
@@ -20,6 +21,7 @@ public class ConsoleController {
     private ConsoleModel model;
     private ConsoleView view;
     private BluetoothDataProcessor processor;
+    private AppUsageLogger appUsageLogger;
     //每隔1s向设备发送一次数据查询
     private android.os.Handler mHandler = new Handler(Looper.getMainLooper());
     private Runnable mRunnable = new Runnable() {
@@ -34,6 +36,7 @@ public class ConsoleController {
         this.view = view;
         initParams(context);
         processor = new BluetoothDataProcessor(this::updateStatus);
+        appUsageLogger = AppUsageLogger.getInstance();
     }
     /**
      * 每隔1s向设备发送一次数据查询
@@ -180,11 +183,14 @@ public class ConsoleController {
                     writeDataToDevice(MyMessage.SHDN_CODE);
                     writeDataToDevice(MyMessage.SHDN_CODE);//开机->进入on_stop
                 }
+                appUsageLogger.startLogging();
+                break;
             case POWER_STATE_RUNNING:
                 if (model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_OFF) {
                     writeDataToDevice(MyMessage.SHDN_CODE);
                     model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
                 }
+                appUsageLogger.stopLogging();
                 break;
         }
         view.onPowerStateChange(model.getPowerState());
