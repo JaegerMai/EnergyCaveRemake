@@ -296,6 +296,12 @@ public class ConsoleController {
         }
         model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
         model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
+        //显示各温感数据，维护用
+        view.onSensorTempChange(0, data[6]);
+        view.onSensorTempChange(1, data[7]);
+        view.onSensorTempChange(2, data[8]);
+        view.onSensorTempChange(3, data[9]);
+
         view.onTimeSet(model.getTimeRemain());//同步时间UI
         view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
         view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());

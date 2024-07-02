@@ -297,6 +297,22 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             }
         });
     }
+    /**
+     * 传感器温度变化回调
+     * @param sensorNumber 传感器编号
+     * @param temp 温度
+     */
+    @Override
+    public void onSensorTempChange(int sensorNumber, int temp) {
+        runOnUiThread(() -> {
+            // 传感器温度显示
+            int[] sensorIds = {R.id.tv_sensor_0, R.id.tv_sensor_1, R.id.tv_sensor_2, R.id.tv_sensor_3};
+            if (sensorNumber >= 0 && sensorNumber < sensorIds.length) {
+                TextView tv = findViewById(sensorIds[sensorNumber]);
+                tv.setText(String.format(Locale.CHINA, "温感%d：%d°C", sensorNumber, temp));
+            }
+        });
+    }
 
     /**
      * 发送消息回调

@@ -131,7 +131,32 @@
                 android:layout_height="50dp"
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
-                android:src="@drawable/icon_console_weatherglass_0_39_104" />
+                android:src="@drawable/icon_console_weatherglass_0_39_104"
+                android:visibility="gone" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tv_sensor_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="温感0：\n30°C"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp"/>
+                <TextView
+                    android:id="@+id/tv_sensor_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="温感1：\n30°C"
+                    android:textSize="15sp"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="10dp"/>
+            </LinearLayout>
+
         </LinearLayout>
         <!--下温区控制-->
         <LinearLayout
@@ -199,7 +224,31 @@
                 android:layout_height="50dp"
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
-                android:src="@drawable/icon_console_weatherglass_0_39_104" />
+                android:src="@drawable/icon_console_weatherglass_0_39_104"
+                android:visibility="gone" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tv_sensor_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="温感2：\n30°C"
+                    android:textSize="15sp"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="10dp"/>
+                <TextView
+                    android:id="@+id/tv_sensor_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="温感3：\n30°C"
+                    android:textSize="15sp"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="10dp"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
