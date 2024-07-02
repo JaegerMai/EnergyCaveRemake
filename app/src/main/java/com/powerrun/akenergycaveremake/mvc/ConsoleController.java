@@ -16,12 +16,16 @@ import com.powerrun.akenergycaveremake.BluetoothDataProcessor;
 import com.powerrun.akenergycaveremake.MyMessage;
 import com.powerrun.akenergycaveremake.common.SystemConfig;
 
+import java.util.Calendar;
+
 public class ConsoleController {
     private static final String TAG = "ConsoleController";
     private ConsoleModel model;
     private ConsoleView view;
     private BluetoothDataProcessor processor;
     private AppUsageLogger appUsageLogger;
+    //环境温度，用于调节温度模式
+    private Context mContext;
     //每隔1s向设备发送一次数据查询
     private android.os.Handler mHandler = new Handler(Looper.getMainLooper());
     private Runnable mRunnable = new Runnable() {
@@ -34,6 +38,7 @@ public class ConsoleController {
     public ConsoleController(ConsoleModel model, ConsoleView view, Context context) {
         this.model = model;
         this.view = view;
+        this.mContext = context;
         initParams(context);
         processor = new BluetoothDataProcessor(this::updateStatus);
         appUsageLogger = AppUsageLogger.getInstance();
@@ -256,57 +261,58 @@ public class ConsoleController {
     //储存上一次调整温度挡位的时间
     private long lastAdjustTime = 0;
     public void updateStatus(byte[] data){
+        //判断数据是否异常
+        if(null == data || data.length < 16){
+            Log.e(TAG, "processBleData: 数据异常");
+            return;
+        }
 
-            //判断数据是否异常
-            if(null == data || data.length < 16){
-                Log.e(TAG, "processBleData: 数据异常");
-                return;
-            }
+        //bit 1 开关机 10开机暂停，11开机运行
+        int powerState = (data[3] & 0x02) >> 1;
+        int isRunning = (data[3] & 0x01);
+        //判断运行状态
+        if(powerState == 1 && isRunning == 1){
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
+            needSync = false;
+        } else if(powerState == 1 && isRunning == 0){
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
+        } else {
+            model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
+            needSync = true;
+            return;
+        }
+        view.onPowerStateChange(model.getPowerState());//同步电源UI
 
-            //bit 1 开关机 10开机暂停，11开机运行
-            int powerState = (data[3] & 0x02) >> 1;
-            int isRunning = (data[3] & 0x01);
-            //判断运行状态
-            if(powerState == 1 && isRunning == 1){
-                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
-                needSync = false;
-            } else if(powerState == 1 && isRunning == 0){
-                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_PAUSE);
-            } else {
-                model.setPowerState(ConsoleModel.PowerState.POWER_STATE_OFF);
-                needSync = true;
-                return;
-            }
-            view.onPowerStateChange(model.getPowerState());//同步电源UI
+        //开机后先同步设备数据到能量仓
+        if(needSync){
+            syncDataToDevice(data);
+        }
 
-            //开机后先同步设备数据到能量仓
-            if(needSync){
-                syncDataToDevice(data);
-            }
+        //解析数据
+        model.setPower0(data[0]);//通道0功率
+        model.setPower1(data[1]);//通道1功率
+        if(!needSync) {
+            model.setTimeRemain(data[2]);//剩余时间，同步完成后才更新
+        }
+        model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
+        model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
+        view.onTimeSet(model.getTimeRemain());//同步时间UI
+        view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
+        view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());
+        //同步温度设定值
+        model.setTargetTemp0(data[4]);//通道0目标温度
+        model.setTargetTemp1(data[5]);//通道1目标温度
+        view.onTempSet(ConsoleModel.Channel.CHANNEL_0, model.getTargetTemp0());//同步温度UI
+        view.onTempSet(ConsoleModel.Channel.CHANNEL_1, model.getTargetTemp1());//同步温度UI
 
-            //解析数据
-            model.setPower0(data[0]);//通道0功率
-            model.setPower1(data[1]);//通道1功率
-            if(!needSync) {
-                model.setTimeRemain(data[2]);//剩余时间，同步完成后才更新
-            }
-            model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
-            model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
-            view.onTimeSet(model.getTimeRemain());//同步时间UI
-            view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
-            view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());
-            //同步温度设定值
-            model.setTargetTemp0(data[4]);//通道0目标温度
-            model.setTargetTemp1(data[5]);//通道1目标温度
-            view.onTempSet(ConsoleModel.Channel.CHANNEL_0, model.getTargetTemp0());//同步温度UI
-            view.onTempSet(ConsoleModel.Channel.CHANNEL_1, model.getTargetTemp1());//同步温度UI
-
-            //调整温度挡位, 60s调整一次
+        //调整温度挡位, 60s调整一次
         long currentTime = System.currentTimeMillis();
         if(currentTime - lastAdjustTime > 60 * 1000){
             adjustBothTempLevels(model.getCurrentTemp0(), model.getCurrentTemp1());
             lastAdjustTime = currentTime;
         }
+        //记录环境温度
+        saveEnvTemp(getCurrentTemp(data[6], data[7]));
     }
     /**
      * 重新连接蓝牙时同步数据到设备
@@ -401,5 +407,99 @@ public class ConsoleController {
                         Log.e(TAG, "onWriteFailure: 写入失败");
                     }
                 });
+    }
+    /**
+     * 处理模式切换
+     */
+    public void handleModeChange(int which) {
+        if(model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_RUNNING){
+            view.onMessage("请先启动设备");
+            return;
+        }
+        int envTemp = readEnvTemp();
+        int setTemp = 30;
+        //根据环境温度调整目标温度
+        int[] tempThreshold = {10, 20, 30, 40, Integer.MAX_VALUE};
+        int[] setTemps = {31, 33, 36, 40, 42};
+        for(int i = 0; i < tempThreshold.length; i++){
+            if(envTemp < tempThreshold[i]){
+                setTemp = setTemps[i];
+                break;
+            }
+        }
+        //根据温度模式设置补偿
+        switch (which){
+            case 1:
+                //中温模式
+                setTemp += 2;
+                break;
+            case 2:
+                //高温模式
+                setTemp += 5;
+                break;
+            default:
+                //默认下为低温模式
+                break;
+        }
+        //在子线程中设置温度
+        int finalSetTemp = setTemp;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (model.getTargetTemp0() != finalSetTemp || model.getTargetTemp1() != finalSetTemp) {
+                    if (model.getTargetTemp0() < finalSetTemp) {
+                        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_0);
+                    } else if (model.getTargetTemp0() > finalSetTemp) {
+                        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_0);
+                    }
+
+                    if (model.getTargetTemp1() < finalSetTemp) {
+                        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_1);
+                    } else if (model.getTargetTemp1() > finalSetTemp) {
+                        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_1);
+                    }
+
+                    // 暂停一段时间以允许设备处理指令
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        thread.start();
+    }
+
+    /**
+     * 保存环境温度，每天只更新一次，用于调节温度模式
+     * @param temp
+     */
+    private void saveEnvTemp(int temp) {
+        //获取当前日期
+        Calendar calendar = Calendar.getInstance();
+        int currentDay = calendar.get(Calendar.DAY_OF_YEAR);
+
+        //读取上次保存的日期
+        int lastDay = readEnvDay();
+        if(currentDay != lastDay){
+            //保存温度和日期
+            SharedPreferences sharedPreferences = mContext.getSharedPreferences("environment_temp", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("temp", temp);
+            editor.putInt("day", currentDay);
+            editor.apply();
+        }
+    }
+
+    // 读取环境温度
+    private int readEnvTemp() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("environment_temp", MODE_PRIVATE);
+        return sharedPreferences.getInt("temp", 0);
+    }
+    //读取温度记录的日期
+    private int readEnvDay() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences("environment_temp", MODE_PRIVATE);
+        return sharedPreferences.getInt("day", 0);
     }
 }

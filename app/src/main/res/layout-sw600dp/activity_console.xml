@@ -273,7 +273,33 @@
                 android:layout_gravity="center"
                 android:textSize="20sp"/>
         </LinearLayout>
-
+        <!--模式调节-->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+            <ImageButton
+                android:id="@+id/image_button_mode_regulation"
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:layout_gravity="center"
+                android:background="@drawable/mode_regulation" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="模式调节"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:textSize="32sp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MODE REGULATION"
+                android:textColor="@color/white"
+                android:layout_gravity="center"
+                android:textSize="20sp"/>
+        </LinearLayout>
     </LinearLayout>
 
 

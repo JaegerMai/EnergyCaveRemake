@@ -34,4 +34,9 @@
         <item>破茧·肝脏养生乐</item>
         <item>绽放·心脏养生乐</item>
     </string-array>
+    <string-array name="mode_list">
+        <item>低温模式</item>
+        <item>中温模式</item>
+        <item>高温模式</item>
+    </string-array>
 </resources>

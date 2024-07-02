@@ -201,6 +201,19 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         builder.create().show();
     }
     /**
+     * 打开模式选择对话框
+     */
+    private void openModeDialog() {
+        String[] modeList = getResources().getStringArray(R.array.mode_list);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
+                .setTitle("选择加热模式")
+                .setSingleChoiceItems(modeList, 0, (dialog, which) -> {
+                    controller.handleModeChange(which);
+                    dialog.dismiss();
+                });
+        builder.create().show();
+    }
+    /**
      * 初始化UI
      */
     private void initUI() {
@@ -213,7 +226,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 findViewById(R.id.image_button_temp_add_1),
                 findViewById(R.id.image_button_temp_dec_1),
                 findViewById(R.id.image_button_power),
-                findViewById(R.id.image_button_music)
+                findViewById(R.id.image_button_music),
+                findViewById(R.id.image_button_mode_regulation)
         };
         ImageButton[] longPressButtons = new ImageButton[]{
                 findViewById(R.id.image_button_time_add),
@@ -246,7 +260,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         clickActions.put(R.id.image_button_temp_dec_1, controller::handleTempDec1);
         clickActions.put(R.id.image_button_music, this::openMusicDialog);
         clickActions.put(R.id.image_button_power, controller::handlePowerButton);
-
+        clickActions.put(R.id.image_button_mode_regulation, this::openModeDialog);
 
         // 设置字体样式
         AssetManager assets = getApplication().getAssets();
