@@ -7,6 +7,8 @@ public class ConsoleModel {
     public enum Channel{
         CHANNEL_0,
         CHANNEL_1,
+        CHANNEL_2,
+        CHANNEL_3
     }
     public static final int ADD = 0;
     public static final int DEC = 1;
@@ -28,40 +30,25 @@ public class ConsoleModel {
     }
     /**--------------------能量仓参数----------------------------**/
     private int timeRemain = SystemConfig.defaultCostTime;//剩余时间
-    private int targetTemp0 = 30;//通道0目标温度
-    private int targetTemp1 = 30;//通道1目标温度
-    private int currentTemp0 = 0;//通道0当前温度
-    private int currentTemp1 = 0;//通道1当前温度
-    private int power0 = SystemConfig.defaultChan0Level;//通道0功率
-    private int power1 = SystemConfig.defaultChan1Level;//通道1功率
+    private int[] targetTemps = new int[]{30,30,30,30};//目标温度
+    private int[] currentTemps = new int[]{0,0,0,0};//当前温度
+    private int[] powers = new int[]{SystemConfig.defaultChan0Level, SystemConfig.defaultChan1Level,
+            SystemConfig.defaultChan2Level, SystemConfig.defaultChan3Level};//功率
     private int powerType = SystemConfig.defaultPowerType;//功率类型
 
     public int getTimeRemain() {
         return timeRemain;
     }
 
-    public int getTargetTemp0() {
-        return targetTemp0;
+    public int getTargetTemp(Channel channel){
+        return targetTemps[channel.ordinal()];
     }
 
-    public int getTargetTemp1() {
-        return targetTemp1;
+    public int getCurrentTemp(Channel channel){
+        return currentTemps[channel.ordinal()];
     }
-
-    public int getCurrentTemp0() {
-        return currentTemp0;
-    }
-
-    public int getCurrentTemp1() {
-        return currentTemp1;
-    }
-
-    public int getPower0() {
-        return power0;
-    }
-
-    public int getPower1() {
-        return power1;
+    public int getPower(Channel channel){
+        return powers[channel.ordinal()];
     }
 
     public int getPowerType() {
@@ -72,28 +59,14 @@ public class ConsoleModel {
         this.timeRemain = timeRemain;
     }
 
-    public void setTargetTemp0(int targetTemp0) {
-        this.targetTemp0 = targetTemp0;
+    public void setTargetTemp(Channel channel, int targetTemp){
+        targetTemps[channel.ordinal()] = targetTemp;
     }
-
-    public void setTargetTemp1(int targetTemp1) {
-        this.targetTemp1 = targetTemp1;
+    public void setCurrentTemp(Channel channel, int currentTemp){
+        currentTemps[channel.ordinal()] = currentTemp;
     }
-
-    public void setCurrentTemp0(int currentTemp0) {
-        this.currentTemp0 = currentTemp0;
-    }
-
-    public void setCurrentTemp1(int currentTemp1) {
-        this.currentTemp1 = currentTemp1;
-    }
-
-    public void setPower0(int power0) {
-        this.power0 = power0;
-    }
-
-    public void setPower1(int power1) {
-        this.power1 = power1;
+    public void setPower(Channel channel, int power){
+        powers[channel.ordinal()] = power;
     }
 
     public void setPowerType(int powerType) {

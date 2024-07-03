@@ -132,7 +132,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             //开始交换数据
             BleManager.getInstance().notify(bleDevice, SystemConfig.UUID_SERVICE, SystemConfig.UUID_NOTIFY,bleNotifyCallback);
             controller.startQueryData();
-            // TODO: 开一个线程记录蓝牙数据1min一次
         }
         @Override
         public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
@@ -225,6 +224,10 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 findViewById(R.id.image_button_temp_dec_0),
                 findViewById(R.id.image_button_temp_add_1),
                 findViewById(R.id.image_button_temp_dec_1),
+                findViewById(R.id.image_button_temp_add_2),
+                findViewById(R.id.image_button_temp_dec_2),
+                findViewById(R.id.image_button_temp_add_3),
+                findViewById(R.id.image_button_temp_dec_3),
                 findViewById(R.id.image_button_power),
                 findViewById(R.id.image_button_music),
                 findViewById(R.id.image_button_mode_regulation)
@@ -235,12 +238,49 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 findViewById(R.id.image_button_temp_add_0),
                 findViewById(R.id.image_button_temp_dec_0),
                 findViewById(R.id.image_button_temp_add_1),
-                findViewById(R.id.image_button_temp_dec_1)
+                findViewById(R.id.image_button_temp_dec_1),
+                findViewById(R.id.image_button_temp_add_2),
+                findViewById(R.id.image_button_temp_dec_2),
+                findViewById(R.id.image_button_temp_add_3),
+                findViewById(R.id.image_button_temp_dec_3)
         };
         TextView[] textViews = new TextView[]{
                 findViewById(R.id.text_view_time),
                 findViewById(R.id.text_view_temp_0),
-                findViewById(R.id.text_view_temp_1)
+                findViewById(R.id.text_view_temp_1),
+                findViewById(R.id.text_view_temp_2),
+                findViewById(R.id.text_view_temp_3)
+        };
+        int[] buttonIds = new int[]{
+                R.id.image_button_time_add,
+                R.id.image_button_time_dec,
+                R.id.image_button_temp_add_0,
+                R.id.image_button_temp_dec_0,
+                R.id.image_button_temp_add_1,
+                R.id.image_button_temp_dec_1,
+                R.id.image_button_temp_add_2,
+                R.id.image_button_temp_dec_2,
+                R.id.image_button_temp_add_3,
+                R.id.image_button_temp_dec_3,
+                R.id.image_button_music,
+                R.id.image_button_power,
+                R.id.image_button_mode_regulation
+        };
+
+        Runnable[] actions = new Runnable[]{
+                controller::handleTimeAdd,
+                controller::handleTimeDec,
+                controller::handleTempAdd0,
+                controller::handleTempDec0,
+                controller::handleTempAdd1,
+                controller::handleTempDec1,
+                controller::handleTempAdd2,
+                controller::handleTempDec2,
+                controller::handleTempAdd3,
+                controller::handleTempDec3,
+                this::openMusicDialog,
+                controller::handlePowerButton,
+                this::openModeDialog
         };
 
         // 设置点击事件
@@ -252,15 +292,9 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             button.setOnTouchListener(new RepeatListener(400, 200, this));
         }
         // 为每个按钮ID添加对应的点击事件
-        clickActions.put(R.id.image_button_time_add, controller::handleTimeAdd);
-        clickActions.put(R.id.image_button_time_dec, controller::handleTimeDec);
-        clickActions.put(R.id.image_button_temp_add_0, controller::handleTempAdd0);
-        clickActions.put(R.id.image_button_temp_dec_0, controller::handleTempDec0);
-        clickActions.put(R.id.image_button_temp_add_1, controller::handleTempAdd1);
-        clickActions.put(R.id.image_button_temp_dec_1, controller::handleTempDec1);
-        clickActions.put(R.id.image_button_music, this::openMusicDialog);
-        clickActions.put(R.id.image_button_power, controller::handlePowerButton);
-        clickActions.put(R.id.image_button_mode_regulation, this::openModeDialog);
+        for (int i = 0; i < buttonIds.length; i++) {
+            clickActions.put(buttonIds[i], actions[i]);
+        }
 
         // 设置字体样式
         AssetManager assets = getApplication().getAssets();
@@ -286,11 +320,14 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     @Override
     public void onTempChange(ConsoleModel.Channel channel, int temp) {
         runOnUiThread(() -> {
-            if (channel == ConsoleModel.Channel.CHANNEL_0) {
-                updateTempDisplay(findViewById(R.id.image_view_temp_0), temp);
-            } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
-                updateTempDisplay(findViewById(R.id.image_view_temp_1), temp);
-            }
+            int[] imageViewIds = new int[]{
+                    R.id.image_view_temp_0,
+                    R.id.image_view_temp_1,
+                    R.id.image_view_temp_2,
+                    R.id.image_view_temp_3
+            };
+            updateTempDisplay(findViewById(imageViewIds[channel.ordinal()]), temp);
+
             if(temp >=127 || temp == 85){
                 Toast.makeText(mContext, "通道" + channel + "温感为" + temp + "请检查线路",
                         Toast.LENGTH_SHORT).show();
@@ -306,7 +343,12 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     public void onSensorTempChange(int sensorNumber, int temp) {
         runOnUiThread(() -> {
             // 传感器温度显示
-            int[] sensorIds = {R.id.tv_sensor_0, R.id.tv_sensor_1, R.id.tv_sensor_2, R.id.tv_sensor_3};
+            int[] sensorIds = new int[]{
+                    R.id.tv_sensor_0, R.id.tv_sensor_1,
+                    R.id.tv_sensor_2, R.id.tv_sensor_3,
+                    R.id.tv_sensor_4, R.id.tv_sensor_5,
+                    R.id.tv_sensor_6, R.id.tv_sensor_7
+            };
             if (sensorNumber >= 0 && sensorNumber < sensorIds.length) {
                 TextView tv = findViewById(sensorIds[sensorNumber]);
                 tv.setText(String.format(Locale.CHINA, "温感%d：%d°C", sensorNumber, temp));
@@ -354,12 +396,13 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     @Override
     public void onTempSet(ConsoleModel.Channel channel, int value) {
         runOnUiThread(() -> {
-            TextView tv = null;
-            if (channel == ConsoleModel.Channel.CHANNEL_0) {
-                tv = findViewById(R.id.text_view_temp_0);
-            } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
-                tv = findViewById(R.id.text_view_temp_1);
-            }
+            int[] textViewIds = new int[]{
+                    R.id.text_view_temp_0,
+                    R.id.text_view_temp_1,
+                    R.id.text_view_temp_2,
+                    R.id.text_view_temp_3
+            };
+            TextView tv = findViewById(textViewIds[channel.ordinal()]);
             assert tv != null;
             tv.setText(String.format(Locale.CHINA, "%d°C", value));
         });

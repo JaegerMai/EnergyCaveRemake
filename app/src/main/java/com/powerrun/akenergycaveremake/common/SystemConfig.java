@@ -9,6 +9,8 @@ public class SystemConfig {
     public final static String SP_ANKANG_ENERGYCAVE = "SpAnKangEnergyCave";
     public final static String DEFAULT_AIR_POWER0 = "defaultAirPower0";
     public final static String DEFAULT_AIR_POWER1 = "defaultAirPower1";
+    public final static String DEFAULT_AIR_POWER2 = "defaultAirPower2";
+    public final static String DEFAULT_AIR_POWER3 = "defaultAirPower3";
     public final static String DEFAULT_COST_TIME = "defaultCostTime";
     public final static String DEFAULT_POWER_TYPE = "defaultPowerType";
     /**
@@ -17,6 +19,8 @@ public class SystemConfig {
     public static int defaultCostTime = 30;
     public static int defaultChan0Level = 3;
     public static int defaultChan1Level = 3;
+    public static int defaultChan2Level = 3;
+    public static int defaultChan3Level = 3;
     public static int defaultPowerType = 1;//new_power为1,old_power为0
     /**
      *  蓝牙UUID

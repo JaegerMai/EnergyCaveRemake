@@ -57,8 +57,10 @@ public class ConsoleController {
      */
     private void initParams(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(SystemConfig.SP_ANKANG_ENERGYCAVE, MODE_PRIVATE);
-        model.setPower0(sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER0, SystemConfig.defaultChan0Level));
-        model.setPower1(sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER1, SystemConfig.defaultChan1Level));
+        model.setPower(ConsoleModel.Channel.CHANNEL_0,sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER0, SystemConfig.defaultChan0Level));
+        model.setPower(ConsoleModel.Channel.CHANNEL_1,sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER1, SystemConfig.defaultChan1Level));
+        model.setPower(ConsoleModel.Channel.CHANNEL_2,sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER2, SystemConfig.defaultChan2Level));
+        model.setPower(ConsoleModel.Channel.CHANNEL_3,sharedPreferences.getInt(SystemConfig.DEFAULT_AIR_POWER3, SystemConfig.defaultChan3Level));
         model.setTimeRemain(sharedPreferences.getInt(SystemConfig.DEFAULT_COST_TIME, SystemConfig.defaultCostTime));
         model.setPowerType(sharedPreferences.getInt(SystemConfig.DEFAULT_POWER_TYPE, SystemConfig.defaultPowerType));
     }
@@ -78,13 +80,47 @@ public class ConsoleController {
     public void handleTempDec1(){
         tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_1);
     }
+    public void handleTempAdd2(){
+        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_2);
+    }
+    public void handleTempDec2(){
+        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_2);
+    }
+    public void handleTempAdd3(){
+        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_3);
+    }
+    public void handleTempDec3(){
+        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_3);
+    }
     private void tempChange(int action, ConsoleModel.Channel channel){
         Log.i(TAG, "tempChange: " + action + ", Channel" + channel);
+        //初始化目标温度和功率数组
+        int[] targetTemps = new int[]{
+                model.getTargetTemp(ConsoleModel.Channel.CHANNEL_0),
+                model.getTargetTemp(ConsoleModel.Channel.CHANNEL_1),
+                model.getTargetTemp(ConsoleModel.Channel.CHANNEL_2),
+                model.getTargetTemp(ConsoleModel.Channel.CHANNEL_3)
+        };
+        int[] powerTemps = new int[]{
+                model.getPower(ConsoleModel.Channel.CHANNEL_0),
+                model.getPower(ConsoleModel.Channel.CHANNEL_1),
+                model.getPower(ConsoleModel.Channel.CHANNEL_2),
+                model.getPower(ConsoleModel.Channel.CHANNEL_3)
+        };
+
+        //初始化消息数组
+        String[] tAddCodes = new String[]{MyMessage.T_ADD_CH_CODES[0], MyMessage.T_ADD_CH_CODES[1], MyMessage.T_ADD_CH_CODES[2], MyMessage.T_ADD_CH_CODES[3]};
+        String[] tDecCodes = new String[]{MyMessage.T_DEC_CH_CODES[0], MyMessage.T_DEC_CH_CODES[1], MyMessage.T_DEC_CH_CODES[2], MyMessage.T_DEC_CH_CODES[3]};
+        String[] pwAddCodes = new String[]{MyMessage.PW_ADD_CODES[0], MyMessage.PW_ADD_CODES[1], MyMessage.PW_ADD_CODES[2], MyMessage.PW_ADD_CODES[3]};
+        String[] pwDecCodes = new String[]{MyMessage.PW_DEC_CODES[0], MyMessage.PW_DEC_CODES[1], MyMessage.PW_DEC_CODES[2], MyMessage.PW_DEC_CODES[3]};
+
+        //获取当前通道的索引
+        int channelIndex = channel.ordinal();
+
         //获取当前温度和挡位
-        int targetTemp = (channel == ConsoleModel.Channel.CHANNEL_0)
-                ? model.getTargetTemp0() : model.getTargetTemp1();
-        int powerTemp = (channel == ConsoleModel.Channel.CHANNEL_0)
-                ? model.getPower0() : model.getPower1();
+        int targetTemp = targetTemps[channelIndex];
+        int powerTemp = powerTemps[channelIndex];
+
         //判断当前温度是否已经达到上下限
         switch (action){
             case ConsoleModel.ADD:
@@ -94,13 +130,11 @@ public class ConsoleController {
                 }
                 targetTemp += 1;
                 //发送温度数据到设备
-                writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
-                        ? MyMessage.T_ADD_CH_0 : MyMessage.T_ADD_CH_1);
+                writeDataToDevice(tAddCodes[channelIndex]);
                 //发送挡位数据到设备，如果已经是最大值则不发送
                 if(powerTemp < MyMessage.PW_MAX){
                     powerTemp += 1;
-                    writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
-                            ? MyMessage.PW_ADD_CODE_0 : MyMessage.PW_ADD_CODE_1);
+                    writeDataToDevice(pwAddCodes[channelIndex]);
                 }
 
                 break;
@@ -111,27 +145,27 @@ public class ConsoleController {
                 }
                 targetTemp -= 1;
                 //发送温度数据到设备
-                writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
-                        ? MyMessage.T_DEC_CH_0 : MyMessage.T_DEC_CH_1);
+                writeDataToDevice(tDecCodes[channelIndex]);
                 //发送挡位数据到设备，如果已经是最小值则不发送
                 if(powerTemp > MyMessage.PW_MIN){
                     powerTemp -= 1;
-                    writeDataToDevice((channel == ConsoleModel.Channel.CHANNEL_0)
-                            ? MyMessage.PW_DEC_CODE_0 : MyMessage.PW_DEC_CODE_1);
+                    writeDataToDevice(pwDecCodes[channelIndex]);
                 }
                 break;
         }
         //更新数据
-        switch (channel){
-            case CHANNEL_0:
-                model.setTargetTemp0(targetTemp);
-                model.setPower0(powerTemp);
-                break;
-            case CHANNEL_1:
-                model.setTargetTemp1(targetTemp);
-                model.setPower1(powerTemp);
-                break;
-        }
+        targetTemps[channelIndex] = targetTemp;
+        powerTemps[channelIndex] = powerTemp;
+        //更新模型数据
+        model.setTargetTemp(ConsoleModel.Channel.CHANNEL_0,targetTemps[0]);
+        model.setTargetTemp(ConsoleModel.Channel.CHANNEL_1,targetTemps[1]);
+        model.setTargetTemp(ConsoleModel.Channel.CHANNEL_2,targetTemps[2]);
+        model.setTargetTemp(ConsoleModel.Channel.CHANNEL_3,targetTemps[3]);
+        model.setPower(ConsoleModel.Channel.CHANNEL_0,powerTemps[0]);
+        model.setPower(ConsoleModel.Channel.CHANNEL_1,powerTemps[1]);
+        model.setPower(ConsoleModel.Channel.CHANNEL_2,powerTemps[2]);
+        model.setPower(ConsoleModel.Channel.CHANNEL_3,powerTemps[3]);
+
         view.onTempSet(channel, targetTemp);
     }
     /**
@@ -289,32 +323,40 @@ public class ConsoleController {
         }
 
         //解析数据
-        model.setPower0(data[0]);//通道0功率
-        model.setPower1(data[1]);//通道1功率
+        int[] devicePowers = new int[]{data[0], data[1], data[14], data[15]};
+        int[] deviceTemps = new int[]{data[4], data[5], data[16], data[17]};
+        int[] sensorTemps = new int[]{data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13]};
+
+        ConsoleModel.Channel[] channels = ConsoleModel.Channel.values();
+        for (int i = 0; i < channels.length; i++) {
+            ConsoleModel.Channel channel = channels[i];
+            model.setPower(channel, devicePowers[i]);
+            model.setCurrentTemp(channel, getCurrentTemp(sensorTemps[i*2], sensorTemps[i*2+1]));
+            //同步目标温度
+            model.setTargetTemp(channel, deviceTemps[i]);
+            //同步UI
+            view.onTempChange(channel, model.getCurrentTemp(channel));
+            view.onTempSet(channel, model.getTargetTemp(channel));
+            //显示各温感数据，维护用
+            view.onSensorTempChange(i*2, sensorTemps[i*2]);
+            view.onSensorTempChange(i*2+1, sensorTemps[i*2+1]);
+        }
+
         if(!needSync) {
             model.setTimeRemain(data[2]);//剩余时间，同步完成后才更新
         }
-        model.setCurrentTemp0(getCurrentTemp(data[6], data[7]));//通道0温度
-        model.setCurrentTemp1(getCurrentTemp(data[8], data[9]));//通道1温度
-        //显示各温感数据，维护用
-        view.onSensorTempChange(0, data[6]);
-        view.onSensorTempChange(1, data[7]);
-        view.onSensorTempChange(2, data[8]);
-        view.onSensorTempChange(3, data[9]);
-
-        view.onTimeSet(model.getTimeRemain());//同步时间UI
-        view.onTempChange(ConsoleModel.Channel.CHANNEL_0, model.getCurrentTemp0());//同步温度UI
-        view.onTempChange(ConsoleModel.Channel.CHANNEL_1, model.getCurrentTemp1());
-        //同步温度设定值
-        model.setTargetTemp0(data[4]);//通道0目标温度
-        model.setTargetTemp1(data[5]);//通道1目标温度
-        view.onTempSet(ConsoleModel.Channel.CHANNEL_0, model.getTargetTemp0());//同步温度UI
-        view.onTempSet(ConsoleModel.Channel.CHANNEL_1, model.getTargetTemp1());//同步温度UI
+        view.onTimeSet(model.getTimeRemain());
 
         //调整温度挡位, 60s调整一次
         long currentTime = System.currentTimeMillis();
         if(currentTime - lastAdjustTime > 60 * 1000){
-            adjustBothTempLevels(model.getCurrentTemp0(), model.getCurrentTemp1());
+            int[] currentTemps = new int[]{
+                    model.getCurrentTemp(ConsoleModel.Channel.CHANNEL_0),
+                    model.getCurrentTemp(ConsoleModel.Channel.CHANNEL_1),
+                    model.getCurrentTemp(ConsoleModel.Channel.CHANNEL_2),
+                    model.getCurrentTemp(ConsoleModel.Channel.CHANNEL_3)
+            };
+            adjustAllTempLevels(currentTemps);
             lastAdjustTime = currentTime;
         }
         //记录环境温度
@@ -325,23 +367,27 @@ public class ConsoleController {
      */
     private void syncDataToDevice(byte[] data){
         Log.i(TAG, "syncDataToDevice: 同步数据到设备");
-        if(model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_PAUSE){ //等待到开机了，同步完之后才可以正常运行
+        if(model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_PAUSE){
+            //等待到开机了，同步完之后才可以正常运行
             return;
         }
         view.onDeviceSync(true);
-        int devicePower0 = data[0];//设备通道0功率
-        int devicePower1 = data[1];//设备通道1功率
-        int deviceTime = data[2];//设备剩余时间
-        int deviceTemp0 = data[4];//设备通道0目标温度
-        int deviceTemp1 = data[5];//设备通道1目标温度
-        Log.i(TAG, String.format("syncDataToDevice: device data: power0:%d, power1:%d, time:%d, temp0:%d, temp1:%d\n",
-            devicePower0, devicePower1, deviceTime, deviceTemp0, deviceTemp1));
-        //同步数据到设备
-        sendSignalToDevice(model.getPower0() - devicePower0, MyMessage.PW_ADD_CODE_0, MyMessage.PW_DEC_CODE_0);
-        sendSignalToDevice(model.getPower1() - devicePower1, MyMessage.PW_ADD_CODE_1, MyMessage.PW_DEC_CODE_1);
+
+        int[] devicePowers = new int[]{data[0], data[1], data[14], data[15]};//设备功率
+        int deviceTime = data[2];//设备时间
+        int[] deviceTemps = new int[]{data[4], data[5], data[16], data[17]};//设备目标温度
+
+        ConsoleModel.Channel[] channels = ConsoleModel.Channel.values();
+        for (int i = 0; i < channels.length; i++) {
+            ConsoleModel.Channel channel = channels[i];
+            int devicePower = devicePowers[i];
+            int deviceTemp = deviceTemps[i];
+            sendSignalToDevice(model.getPower(channel) - devicePower, MyMessage.PW_ADD_CODES[i], MyMessage.PW_DEC_CODES[i]);
+            sendSignalToDevice(model.getTargetTemp(channel) - deviceTemp, MyMessage.T_ADD_CH_CODES[i], MyMessage.T_DEC_CH_CODES[i]);
+        }
+
         sendSignalToDevice((model.getTimeRemain() - deviceTime)/5, MyMessage.TM_ADD_CODE, MyMessage.TM_DEC_CODE);
-        sendSignalToDevice(model.getTargetTemp0() - deviceTemp0, MyMessage.T_ADD_CH_0, MyMessage.T_DEC_CH_0);
-        sendSignalToDevice(model.getTargetTemp1() - deviceTemp1, MyMessage.T_ADD_CH_1, MyMessage.T_DEC_CH_1);
+
         Log.i(TAG, "syncDataToDevice: 同步数据到设备完成");
         //转到运行状态pause->running
         writeDataToDevice(MyMessage.STOP_CODE);
@@ -378,17 +424,18 @@ public class ConsoleController {
     }
 
     /**
-     * 调整两个通道的温度挡位
-     * @param currentTemp0 通道0当前温度
-     * @param currentTemp1 通道1当前温度
+     * 调整所有通道的温度挡位
+     * @param currentTemps 各通道当前温度
      */
-    private void adjustBothTempLevels(int currentTemp0, int currentTemp1){
-
-        int power0 = adjustTempLevel(currentTemp0, model.getTargetTemp0(), model.getPower0(), MyMessage.PW_DEC_CODE_0, MyMessage.PW_ADD_CODE_0);
-        int power1 = adjustTempLevel(currentTemp1, model.getTargetTemp1(), model.getPower1(), MyMessage.PW_DEC_CODE_1, MyMessage.PW_ADD_CODE_1);
-
-        model.setPower0(power0);
-        model.setPower1(power1);
+    private void adjustAllTempLevels(int[] currentTemps){
+        ConsoleModel.Channel[] channels = ConsoleModel.Channel.values();
+        for (ConsoleModel.Channel channel : channels){
+            int currentTemp = currentTemps[channel.ordinal()];
+            int targetTemp = model.getTargetTemp(channel);
+            int power = adjustTempLevel(currentTemp, targetTemp, model.getPower(channel),
+                    MyMessage.PW_DEC_CODES[channel.ordinal()], MyMessage.PW_ADD_CODES[channel.ordinal()]);
+            model.setPower(channel, power);
+        }
     }
     /**
      * 向设备写入数据
@@ -452,17 +499,21 @@ public class ConsoleController {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (model.getTargetTemp0() != finalSetTemp || model.getTargetTemp1() != finalSetTemp) {
-                    if (model.getTargetTemp0() < finalSetTemp) {
-                        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_0);
-                    } else if (model.getTargetTemp0() > finalSetTemp) {
-                        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_0);
+                ConsoleModel.Channel[] channels = ConsoleModel.Channel.values();
+                while (true) {
+                    boolean isAllSet = true;
+                    for (ConsoleModel.Channel channel : channels) {
+                        int targetTemp = model.getTargetTemp(channel);
+                        if (targetTemp < finalSetTemp) {
+                            tempChange(ConsoleModel.ADD, channel);
+                            isAllSet = false;
+                        } else if (targetTemp > finalSetTemp) {
+                            tempChange(ConsoleModel.DEC, channel);
+                            isAllSet = false;
+                        }
                     }
-
-                    if (model.getTargetTemp1() < finalSetTemp) {
-                        tempChange(ConsoleModel.ADD, ConsoleModel.Channel.CHANNEL_1);
-                    } else if (model.getTargetTemp1() > finalSetTemp) {
-                        tempChange(ConsoleModel.DEC, ConsoleModel.Channel.CHANNEL_1);
+                    if (isAllSet) {
+                        break;
                     }
 
                     // 暂停一段时间以允许设备处理指令
