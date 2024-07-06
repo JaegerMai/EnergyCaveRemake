@@ -41,7 +41,7 @@ public class ConsoleController {
         this.mContext = context;
         initParams(context);
         processor = new BluetoothDataProcessor(this::updateStatus);
-        appUsageLogger = AppUsageLogger.getInstance();
+        appUsageLogger = AppUsageLogger.getInstance(mContext);
     }
     /**
      * 每隔1s向设备发送一次数据查询

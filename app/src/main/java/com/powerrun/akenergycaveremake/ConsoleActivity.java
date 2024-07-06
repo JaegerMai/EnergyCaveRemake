@@ -65,7 +65,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         //连接蓝牙
         connectBle();
         //记录应用使用时间
-        appUsageLogger = AppUsageLogger.getInstance();
+        appUsageLogger = AppUsageLogger.getInstance(mContext);
     }
     @Override
     protected void onDestroy() {
