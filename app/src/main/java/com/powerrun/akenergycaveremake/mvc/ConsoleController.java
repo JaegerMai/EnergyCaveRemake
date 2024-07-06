@@ -41,7 +41,7 @@ public class ConsoleController {
         this.mContext = context;
         initParams(context);
         processor = new BluetoothDataProcessor(this::updateStatus);
-        appUsageLogger = AppUsageLogger.getInstance();
+        appUsageLogger = AppUsageLogger.getInstance(mContext);
     }
     /**
      * 每隔1s向设备发送一次数据查询
@@ -341,7 +341,9 @@ public class ConsoleController {
 
         //解析数据
         int[] devicePowers = new int[]{data[0], data[1], data[14], data[15]};
-        int[] deviceTemps = new int[]{data[4], data[5], data[16], data[17]};
+//        int[] deviceTemps = new int[]{data[4], data[5], data[16], data[17]};//data[16], data[17]是左右能量舱目标温度，但能量房反馈的数据为0，所以不用
+        int[] deviceTemps = new int[]{data[4], data[5], model.getTargetTemp(ConsoleModel.Channel.CHANNEL_2),
+                model.getTargetTemp(ConsoleModel.Channel.CHANNEL_3)};
         int[] sensorTemps = new int[]{data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13]};
 
         ConsoleModel.Channel[] channels = ConsoleModel.Channel.values();
