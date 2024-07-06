@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -200,6 +202,27 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         builder.create().show();
     }
     /**
+     * 打开灯光选择对话框
+     */
+    private boolean[] lightStatus = new boolean[]{false, false};
+    private void openLightDialog() {
+        String[] light_list = getResources().getStringArray(R.array.light_list);
+        ImageButton btnLight = findViewById(R.id.image_button_light);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
+                .setTitle("设置灯光")
+                .setMultiChoiceItems(light_list, lightStatus,
+                        (dialog, which, isChecked) -> {
+                            lightStatus[which] = isChecked;
+                            controller.handleLight(which);
+                            if(lightStatus[0] || lightStatus[1]){
+                                btnLight.setBackgroundResource(R.drawable.light_yellow);
+                            }else{
+                                btnLight.setBackgroundResource(R.drawable.light);
+                            }
+                        });
+        builder.create().show();
+    }
+    /**
      * 打开模式选择对话框
      */
     private void openModeDialog() {
@@ -230,7 +253,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 findViewById(R.id.image_button_temp_dec_3),
                 findViewById(R.id.image_button_power),
                 findViewById(R.id.image_button_music),
-                findViewById(R.id.image_button_mode_regulation)
+                findViewById(R.id.image_button_mode_regulation),
+                findViewById(R.id.image_button_light)
         };
         ImageButton[] longPressButtons = new ImageButton[]{
                 findViewById(R.id.image_button_time_add),
@@ -264,7 +288,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 R.id.image_button_temp_dec_3,
                 R.id.image_button_music,
                 R.id.image_button_power,
-                R.id.image_button_mode_regulation
+                R.id.image_button_mode_regulation,
+                R.id.image_button_light
         };
 
         Runnable[] actions = new Runnable[]{
@@ -280,7 +305,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 controller::handleTempDec3,
                 this::openMusicDialog,
                 controller::handlePowerButton,
-                this::openModeDialog
+                this::openModeDialog,
+                this::openLightDialog
         };
 
         // 设置点击事件

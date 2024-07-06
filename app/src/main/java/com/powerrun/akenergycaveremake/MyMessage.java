@@ -15,8 +15,8 @@ public class MyMessage {
     public static final String OLD_TM_ADD_CODE = "w";      //时间加10码
     public static final String OLD_TM_DEC_CODE = "x";     //时间减10码
     public static final String SENT = "i";               //发送温度、时间的查询
-    public static final String LIGHT_CM1="`";   //0x60
-    public static final String LIGHT_CM2="p";   //0x70
+    public static final String LIGHT_CMD_0="`";   //0x60
+    public static final String LIGHT_CMD_1="p";   //0x70
 
     /**---------------------------------------------------**/
     public static final String[] T_ADD_CH_CODES = new String[]{"l", "n", "<", ">"};          //温度设定增

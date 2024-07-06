@@ -245,7 +245,24 @@ public class ConsoleController {
             writeDataToDevice(MyMessage.SHDN_CODE);
         }
     }
-
+    /**
+     * 灯光控制处理逻辑
+     */
+    public void handleLight(int lightNumber){
+        if (!BleManager.getInstance().isConnected(model.getBleDevice())) {
+            view.onMessage("设备未连接");
+            return;
+        }
+        if(model.getPowerState() != ConsoleModel.PowerState.POWER_STATE_RUNNING){
+            view.onMessage("请先启动设备");
+            return;
+        }
+        if(lightNumber == 0){
+            writeDataToDevice(MyMessage.LIGHT_CMD_0);
+        } else if(lightNumber == 1){
+            writeDataToDevice(MyMessage.LIGHT_CMD_1);
+        }
+    }
     /**
      * 添加数据到队列
      * @param data 蓝牙接收到的数据

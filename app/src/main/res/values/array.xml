@@ -39,4 +39,8 @@
         <item>中温模式</item>
         <item>高温模式</item>
     </string-array>
+    <string-array name="light_list">
+        <item>灯光1</item>
+        <item>灯光2</item>
+    </string-array>
 </resources>
