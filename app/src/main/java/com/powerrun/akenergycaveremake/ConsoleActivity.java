@@ -323,6 +323,14 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         runOnUiThread(() -> Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show());
     }
 
+    private Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    };
     /**
      * 设置时间回调
      * @param value 时间
@@ -335,13 +343,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             //剩余时间不足1分钟时提示
             if(value == 1) {
                 Toast.makeText(mContext, "剩余时间不足1分钟", Toast.LENGTH_SHORT).show();
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    if (value == 0) {
-                        Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                }, 60 * 1000);
+                handler.removeCallbacks(runnable); // 取消上一次的延迟任务
+                handler.postDelayed(runnable, 60 * 1000); // 创建一个新的延迟任务
             }
         });
     }
