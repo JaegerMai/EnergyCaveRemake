@@ -339,7 +339,6 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 handler.postDelayed(() -> {
                     if (value == 0) {
                         Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
-                        finish();
                     }
                 }, 60 * 1000);
             }
