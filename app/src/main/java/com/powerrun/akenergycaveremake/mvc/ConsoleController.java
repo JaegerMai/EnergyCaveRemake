@@ -394,7 +394,8 @@ public class ConsoleController {
 
         int[] devicePowers = new int[]{data[0], data[1], data[14], data[15]};//设备功率
         int deviceTime = data[2];//设备时间
-        int[] deviceTemps = new int[]{data[4], data[5], data[16], data[17]};//设备目标温度
+        int[] deviceTemps = new int[]{data[4], data[5], model.getTargetTemp(ConsoleModel.Channel.CHANNEL_2),
+                model.getTargetTemp(ConsoleModel.Channel.CHANNEL_3)};;//设备目标温度
 
         ConsoleModel.Channel[] channels = ConsoleModel.Channel.values();
         for (int i = 0; i < channels.length; i++) {

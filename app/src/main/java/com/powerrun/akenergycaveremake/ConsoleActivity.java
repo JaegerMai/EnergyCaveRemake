@@ -78,8 +78,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         controller.stopQueryData();
         controller.handleExit();
         Toast.makeText(mContext, "控制台已终止", Toast.LENGTH_SHORT).show();
-        Handler handler = new Handler();
-        handler.postDelayed(() -> BleManager.getInstance().disconnectAllDevice(),1000);
+        BleManager.getInstance().disconnectAllDevice();
     }
     @Override
     public void onClick(View view) {
