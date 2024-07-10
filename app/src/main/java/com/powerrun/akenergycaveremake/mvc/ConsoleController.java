@@ -337,6 +337,7 @@ public class ConsoleController {
         //开机后先同步设备数据到能量仓
         if(needSync){
             syncDataToDevice(data);
+            needSync = false;
         }
 
         //解析数据
