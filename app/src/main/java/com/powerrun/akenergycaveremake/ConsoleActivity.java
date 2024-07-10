@@ -327,7 +327,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
         @Override
         public void run() {
             Toast.makeText(mContext, "时间已到", Toast.LENGTH_SHORT).show();
-            finish();
+//            finish();
         }
     };
     /**
@@ -343,7 +343,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             if(value == 1) {
                 Toast.makeText(mContext, "剩余时间不足1分钟", Toast.LENGTH_SHORT).show();
                 handler.removeCallbacks(runnable); // 取消上一次的延迟任务
-                handler.postDelayed(runnable, 60 * 1000); // 创建一个新的延迟任务
+                handler.postDelayed(runnable, 5 * 1000); // 创建一个新的延迟任务
             }
         });
     }

@@ -270,6 +270,7 @@ public class ConsoleController {
         //bit 1 开关机 10开机暂停，11开机运行
         int powerState = (data[3] & 0x02) >> 1;
         int isRunning = (data[3] & 0x01);
+        Log.i(TAG, String.format("powerState:%d, isRunning:%d" ,powerState, isRunning));
         //判断运行状态
         if(powerState == 1 && isRunning == 1){
             model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
@@ -286,6 +287,7 @@ public class ConsoleController {
         //开机后先同步设备数据到能量仓
         if(needSync){
             syncDataToDevice(data);
+            needSync = false;
         }
 
         //解析数据
