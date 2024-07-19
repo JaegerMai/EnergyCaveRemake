@@ -552,7 +552,8 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_weight="1"
-            android:layout_gravity="center">
+            android:layout_gravity="center"
+            android:visibility="gone">
             <ImageButton
                 android:id="@+id/image_button_light"
                 android:layout_width="43dp"
@@ -574,6 +575,14 @@
             <!--                android:layout_gravity="center"-->
             <!--                android:textSize="10sp"/>-->
         </LinearLayout>
+        <!-- 清除已连接的设备信息-->
+        <ImageButton
+            android:id="@+id/image_button_clear"
+            android:layout_width="43dp"
+            android:layout_height="43dp"
+            android:layout_gravity="center"
+            android:background="@drawable/clear"
+            android:layout_marginTop="15dp"/>
     </LinearLayout>
 
 

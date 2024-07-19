@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -253,7 +254,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 findViewById(R.id.image_button_power),
                 findViewById(R.id.image_button_music),
                 findViewById(R.id.image_button_mode_regulation),
-                findViewById(R.id.image_button_light)
+                findViewById(R.id.image_button_light),
+                findViewById(R.id.image_button_clear)
         };
         ImageButton[] longPressButtons = new ImageButton[]{
                 findViewById(R.id.image_button_time_add),
@@ -288,7 +290,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 R.id.image_button_music,
                 R.id.image_button_power,
                 R.id.image_button_mode_regulation,
-                R.id.image_button_light
+                R.id.image_button_light,
+                R.id.image_button_clear
         };
 
         Runnable[] actions = new Runnable[]{
@@ -305,7 +308,8 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                 this::openMusicDialog,
                 controller::handlePowerButton,
                 this::openModeDialog,
-                this::openLightDialog
+                this::openLightDialog,
+                this::clearDeviceInfo
         };
 
         // 设置点击事件
@@ -494,6 +498,26 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             index = 4;
         }
         iv.setImageResource(tempIcons[index]);
+    }
+
+    /**
+     * 清除已保存的设备信息
+     */
+    private void clearDeviceInfo() {
+        AlertDialog alertDialog = new AlertDialog.Builder(mContext)
+                .setTitle("警告")
+                .setMessage("确定要清除已保存的设备信息吗？")
+                .setPositiveButton("确定", (dialog, which) -> {
+                    SharedPreferences sharedPreferences = getSharedPreferences("save_device", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.clear();
+                    editor.apply();
+                    finish();
+                    dialog.dismiss();
+                })
+                .setNegativeButton("取消", (dialog, which) -> dialog.dismiss())
+                .create();
+        alertDialog.show();
     }
 }
 
