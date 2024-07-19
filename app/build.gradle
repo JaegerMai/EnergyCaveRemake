@@ -7,7 +7,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.powerrun.akenergycaveremake"
+        applicationId getApplicationId()
         minSdk 21
         targetSdk 33
         versionCode 1
@@ -26,6 +26,22 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+}
+
+def getApplicationId() {
+    def branchName = getCurrentGitBranch()
+    switch (branchName) {
+        case "master":
+            return "com.powerrun.akenergycaveremake"
+        case "4ch":
+            return "com.powerrun.akenergycaveremake.4ch"
+        default:
+            return "com.powerrun.akenergycaveremake"
+    }
+}
+
+def getCurrentGitBranch(){
+    return 'git rev-parse --abbrev-ref HEAD'.execute([], project.rootDir).text.trim()
 }
 
 dependencies {
