@@ -428,7 +428,7 @@ public class ConsoleController {
         int setTemp = 30;
         //根据环境温度调整目标温度
         int[] tempThreshold = {10, 20, 30, 40, Integer.MAX_VALUE};
-        int[] setTemps = {31, 33, 36, 40, 42};
+        int[] setTemps = {42, 40, 35, 33, 30};
         for(int i = 0; i < tempThreshold.length; i++){
             if(envTemp < tempThreshold[i]){
                 setTemp = setTemps[i];
