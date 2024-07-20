@@ -5,7 +5,12 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -285,17 +290,18 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
     @Override
     public void onTempChange(ConsoleModel.Channel channel, int temp) {
         runOnUiThread(() -> {
-            if (channel == ConsoleModel.Channel.CHANNEL_0) {
-                updateTempDisplay(findViewById(R.id.image_view_temp_0), temp);
-            } else if (channel == ConsoleModel.Channel.CHANNEL_1) {
-                updateTempDisplay(findViewById(R.id.image_view_temp_1), temp);
-            }
+            int imageViewId = (channel == ConsoleModel.Channel.CHANNEL_0) ? R.id.image_view_temp_0 : R.id.image_view_temp_1;
+            ImageView imageView = findViewById(imageViewId);
+
             if(temp >=127 || temp == 85){
-                Toast.makeText(mContext, "通道" + channel + "温感为" + temp + "请检查线路",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "通道" + channel + "温感为" + temp + "请检查线路", Toast.LENGTH_SHORT).show();
+                updateTempDisplayWithException(imageView);
+            } else {
+                updateTempDisplay(imageView, temp);
             }
         });
     }
+
     /**
      * 传感器温度变化回调
      * @param sensorNumber 传感器编号
@@ -428,6 +434,34 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
             index = 4;
         }
         iv.setImageResource(tempIcons[index]);
+    }
+
+    /**
+     * 在温度显示异常时更新温度显示
+     * @param iv 异常通道的ImageView
+     */
+    void updateTempDisplayWithException(ImageView iv){
+
+        iv.setImageResource(R.drawable.icon_console_weatherglass_0_39_104);
+        Drawable originalDrawable = iv.getDrawable();
+        Bitmap bitmap = Bitmap.createBitmap(originalDrawable.getIntrinsicWidth(), originalDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        // 在canvas上绘制原始图像
+        originalDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        originalDrawable.draw(canvas);
+
+        // 创建一个新的paint对象
+        Paint paint = new Paint();
+        paint.setColor(Color.RED); // 设置颜色为红色
+        paint.setStrokeWidth(10); // 设置线宽
+
+        // 在canvas上绘制叉
+        canvas.drawLine(0, 0, canvas.getWidth(), canvas.getHeight(), paint);
+        canvas.drawLine(canvas.getWidth(), 0, 0, canvas.getHeight(), paint);
+
+        // 将新的bitmap设置为imageView的图像
+        iv.setImageBitmap(bitmap);
     }
 }
 
