@@ -63,6 +63,10 @@ public class ConsoleModel {
         targetTemps[channel.ordinal()] = targetTemp;
     }
     public void setCurrentTemp(Channel channel, int currentTemp){
+        //如果当前温度为0，表示温感未连接，设置为默认温度60
+        if (currentTemp == 0){
+            currentTemp = 60;
+        }
         currentTemps[channel.ordinal()] = currentTemp;
     }
     public void setPower(Channel channel, int power){
