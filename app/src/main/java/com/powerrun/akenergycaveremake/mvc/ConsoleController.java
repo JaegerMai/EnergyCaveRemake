@@ -428,7 +428,7 @@ public class ConsoleController {
         int setTemp = 30;
         //根据环境温度调整目标温度
         int[] tempThreshold = {10, 20, 30, 40, Integer.MAX_VALUE};
-        int[] setTemps = {42, 40, 35, 33, 30};
+        int[] setTemps = {42, 40, 38, 35, 33};
         for(int i = 0; i < tempThreshold.length; i++){
             if(envTemp < tempThreshold[i]){
                 setTemp = setTemps[i];
@@ -439,11 +439,11 @@ public class ConsoleController {
         switch (which){
             case 1:
                 //中温模式
-                setTemp += 2;
+                setTemp += 5;
                 break;
             case 2:
                 //高温模式
-                setTemp += 5;
+                setTemp += 10;
                 break;
             default:
                 //默认下为低温模式
