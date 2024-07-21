@@ -4,33 +4,36 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_usual"
     android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="15dp">
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
 
         <!--时间控制-->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="0.6"
+            android:orientation="vertical">
+
             <LinearLayout
                 android:layout_width="105dp"
                 android:layout_height="105dp"
-                android:background="@drawable/control_machine_voal_btn"
-                android:orientation="vertical"
                 android:layout_gravity="center"
-                android:gravity="center">
+                android:background="@drawable/control_machine_voal_btn"
+                android:gravity="center"
+                android:orientation="vertical">
+
                 <ImageButton
                     android:id="@+id/image_button_time_add"
                     android:layout_width="23dp"
                     android:layout_height="23dp"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="2dp"
                     android:background="@drawable/icon_console_add_32_32"
-                    android:scaleType="centerInside"
-                    android:layout_marginBottom="2dp"/>
+                    android:scaleType="centerInside" />
 
                 <TextView
                     android:id="@+id/text_view_time"
@@ -46,84 +49,93 @@
                     android:layout_width="30dp"
                     android:layout_height="23dp"
                     android:layout_gravity="center"
+                    android:layout_marginTop="2dp"
                     android:background="@drawable/icon_console_dec_32_32"
-                    android:scaleType="centerInside"
-                    android:layout_marginTop="2dp"/>
+                    android:scaleType="centerInside" />
             </LinearLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="时间"
                 android:textColor="@color/white"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Time"
                 android:textColor="@color/white"
-                android:textSize="10sp"/>
+                android:textSize="10sp" />
         </LinearLayout>
 
         <!--左侧板温区控制-->
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
+
                 <LinearLayout
                     android:layout_width="105dp"
                     android:layout_height="105dp"
-                    android:background="@drawable/control_machine_voal_btn"
-                    android:orientation="vertical"
                     android:layout_gravity="center"
-                    android:gravity="center">
+                    android:background="@drawable/control_machine_voal_btn"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
                     <ImageButton
                         android:id="@+id/image_button_temp_add_2"
                         android:layout_width="23dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
+                        android:layout_marginBottom="2dp"
                         android:background="@drawable/icon_console_add_32_32"
-                        android:scaleType="centerInside"
-                        android:layout_marginBottom="2dp"/>
+                        android:scaleType="centerInside" />
+
                     <TextView
                         android:id="@+id/text_view_temp_2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="30°C"
-                        android:textSize="30sp"
                         android:layout_gravity="center"
-                        android:textColor="@color/white"/>
+                        android:text="30°C"
+                        android:textColor="@color/white"
+                        android:textSize="30sp" />
+
                     <ImageButton
                         android:id="@+id/image_button_temp_dec_2"
                         android:layout_width="30dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
+                        android:layout_marginTop="2dp"
                         android:background="@drawable/icon_console_dec_32_32"
-                        android:scaleType="centerInside"
-                        android:layout_marginTop="2dp"/>
+                        android:scaleType="centerInside" />
                 </LinearLayout>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="左侧板温度调节"
                     android:textColor="@color/white"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="CABIN LEFT TEMPERATURE"
                     android:textColor="@color/white"
-                    android:textSize="10sp"/>
+                    android:textSize="10sp" />
             </LinearLayout>
 
             <ImageView
@@ -133,91 +145,100 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
                 android:src="@drawable/icon_console_weatherglass_0_39_104"
-                android:visibility="visible" />
+                android:visibility="gone" />
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="visible">
+
                 <TextView
                     android:id="@+id/tv_sensor_4"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
                     android:text="温感4：\n30°C"
-                    android:textSize="15sp"
                     android:textColor="@color/white"
-                    android:layout_marginBottom="10dp"/>
+                    android:textSize="15sp" />
+
                 <TextView
                     android:id="@+id/tv_sensor_5"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
                     android:text="温感5：\n30°C"
-                    android:textSize="15sp"
                     android:textColor="@color/white"
-                    android:layout_marginBottom="10dp"/>
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
 
         <!--背板温区控制-->
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_weight="1"
             android:gravity="center">
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
+
                 <LinearLayout
                     android:layout_width="105dp"
                     android:layout_height="105dp"
-                    android:background="@drawable/control_machine_voal_btn"
-                    android:orientation="vertical"
                     android:layout_gravity="center"
-                    android:gravity="center">
+                    android:background="@drawable/control_machine_voal_btn"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
                     <ImageButton
                         android:id="@+id/image_button_temp_add_0"
                         android:layout_width="23dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
+                        android:layout_marginBottom="2dp"
                         android:background="@drawable/icon_console_add_32_32"
-                        android:scaleType="centerInside"
-                        android:layout_marginBottom="2dp"/>
+                        android:scaleType="centerInside" />
+
                     <TextView
                         android:id="@+id/text_view_temp_0"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="30°C"
-                        android:textSize="30sp"
                         android:layout_gravity="center"
-                        android:textColor="@color/white"/>
+                        android:text="30°C"
+                        android:textColor="@color/white"
+                        android:textSize="30sp" />
+
                     <ImageButton
                         android:id="@+id/image_button_temp_dec_0"
                         android:layout_width="30dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
+                        android:layout_marginTop="2dp"
                         android:background="@drawable/icon_console_dec_32_32"
-                        android:scaleType="centerInside"
-                        android:layout_marginTop="2dp"/>
+                        android:scaleType="centerInside" />
                 </LinearLayout>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="背板温度调节"
                     android:textColor="@color/white"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="CABIN UP TEMPERATURE"
                     android:textColor="@color/white"
-                    android:textSize="10sp"/>
+                    android:textSize="10sp" />
             </LinearLayout>
 
             <ImageView
@@ -227,91 +248,101 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
                 android:src="@drawable/icon_console_weatherglass_0_39_104"
-                android:visibility="visible" />
+                android:visibility="gone" />
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="visible">
+
                 <TextView
                     android:id="@+id/tv_sensor_0"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
                     android:text="温感0：\n30°C"
-                    android:textSize="15sp"
                     android:textColor="@color/white"
-                    android:layout_marginBottom="10dp"/>
+                    android:textSize="15sp" />
+
                 <TextView
                     android:id="@+id/tv_sensor_1"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
                     android:text="温感1：\n30°C"
-                    android:textSize="15sp"
                     android:textColor="@color/white"
-                    android:layout_marginBottom="10dp"/>
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
 
         <!--右侧板温区控制-->
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
+
                 <LinearLayout
                     android:layout_width="105dp"
                     android:layout_height="105dp"
-                    android:background="@drawable/control_machine_voal_btn"
-                    android:orientation="vertical"
                     android:layout_gravity="center"
-                    android:gravity="center">
+                    android:background="@drawable/control_machine_voal_btn"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
                     <ImageButton
                         android:id="@+id/image_button_temp_add_3"
                         android:layout_width="23dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
+                        android:layout_marginBottom="2dp"
                         android:background="@drawable/icon_console_add_32_32"
-                        android:scaleType="centerInside"
-                        android:layout_marginBottom="2dp"/>
+                        android:scaleType="centerInside" />
+
                     <TextView
                         android:id="@+id/text_view_temp_3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="30°C"
-                        android:textSize="30sp"
                         android:layout_gravity="center"
-                        android:textColor="@color/white"/>
+                        android:text="30°C"
+                        android:textColor="@color/white"
+                        android:textSize="30sp" />
+
                     <ImageButton
                         android:id="@+id/image_button_temp_dec_3"
                         android:layout_width="30dp"
                         android:layout_height="23dp"
                         android:layout_gravity="center"
+                        android:layout_marginTop="2dp"
                         android:background="@drawable/icon_console_dec_32_32"
-                        android:scaleType="centerInside"
-                        android:layout_marginTop="2dp"/>
+                        android:scaleType="centerInside" />
                 </LinearLayout>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="右侧板温度调节"
                     android:textColor="@color/white"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="CABIN RIGHT TEMPERATURE"
                     android:textColor="@color/white"
-                    android:textSize="10sp"/>
+                    android:textSize="10sp" />
             </LinearLayout>
 
             <ImageView
@@ -321,30 +352,33 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
                 android:src="@drawable/icon_console_weatherglass_0_39_104"
-                android:visibility="visible" />
+                android:visibility="gone" />
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="visible">
+
                 <TextView
                     android:id="@+id/tv_sensor_6"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
                     android:text="温感6：\n30°C"
-                    android:textSize="15sp"
                     android:textColor="@color/white"
-                    android:layout_marginBottom="10dp"/>
+                    android:textSize="15sp" />
+
                 <TextView
                     android:id="@+id/tv_sensor_7"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="10dp"
                     android:text="温感7：\n30°C"
-                    android:textSize="15sp"
                     android:textColor="@color/white"
-                    android:layout_marginBottom="10dp"/>
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -360,7 +394,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_weight="1"
+            android:layout_weight="0.6"
             android:layout_gravity="center">
 
             <ImageButton
@@ -483,15 +517,15 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
                 android:src="@drawable/icon_console_weatherglass_0_39_104"
-                android:visibility="visible" />
+                android:visibility="gone" />
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="visible">
                 <TextView
                     android:id="@+id/tv_sensor_2"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感2：\n30°C"
@@ -500,7 +534,7 @@
                     android:layout_marginBottom="10dp"/>
                 <TextView
                     android:id="@+id/tv_sensor_3"
-                    android:layout_width="wrap_content"
+                    android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感3：\n30°C"
