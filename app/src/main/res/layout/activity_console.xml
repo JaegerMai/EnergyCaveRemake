@@ -553,7 +553,7 @@
             android:orientation="vertical"
             android:layout_weight="1"
             android:layout_gravity="center"
-            android:visibility="gone">
+            android:visibility="visible">
             <ImageButton
                 android:id="@+id/image_button_light"
                 android:layout_width="43dp"
@@ -582,7 +582,8 @@
             android:layout_height="43dp"
             android:layout_gravity="center"
             android:background="@drawable/clear"
-            android:layout_marginTop="15dp"/>
+            android:layout_marginTop="15dp"
+            android:visibility="gone"/>
     </LinearLayout>
 
 
