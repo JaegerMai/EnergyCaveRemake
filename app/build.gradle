@@ -38,6 +38,12 @@ def getApplicationDevId() {
         case "4ch":
             appId = "com.powerrun.akenergycaveremake4ch"
             break
+        case "maintenance":
+            appId = "com.powerrun.akenergycaveremakemaintenance"
+            break
+        case "maintenance-4ch":
+            appId = "com.powerrun.akenergycaveremakemaintenance4ch"
+            break
         default:
             appId = "com.powerrun.akenergycaveremake"
             break
