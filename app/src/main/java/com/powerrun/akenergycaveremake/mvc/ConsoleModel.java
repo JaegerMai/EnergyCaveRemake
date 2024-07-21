@@ -81,10 +81,18 @@ public class ConsoleModel {
     }
 
     public void setCurrentTemp0(int currentTemp0) {
+        //如果当前温度为0，表示温感未连接，设置为默认温度60
+        if (currentTemp0 == 0){
+            currentTemp0 = 60;
+        }
         this.currentTemp0 = currentTemp0;
     }
 
     public void setCurrentTemp1(int currentTemp1) {
+        //如果当前温度为0，表示温感未连接，设置为默认温度60
+        if (currentTemp0 == 0){
+            currentTemp0 = 60;
+        }
         this.currentTemp1 = currentTemp1;
     }
 

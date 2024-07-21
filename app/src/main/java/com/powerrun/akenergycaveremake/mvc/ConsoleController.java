@@ -41,7 +41,7 @@ public class ConsoleController {
         this.mContext = context;
         initParams(context);
         processor = new BluetoothDataProcessor(this::updateStatus);
-        appUsageLogger = AppUsageLogger.getInstance();
+        appUsageLogger = AppUsageLogger.getInstance(mContext);
     }
     /**
      * 每隔1s向设备发送一次数据查询
@@ -270,6 +270,7 @@ public class ConsoleController {
         //bit 1 开关机 10开机暂停，11开机运行
         int powerState = (data[3] & 0x02) >> 1;
         int isRunning = (data[3] & 0x01);
+        Log.i(TAG, String.format("powerState:%d, isRunning:%d" ,powerState, isRunning));
         //判断运行状态
         if(powerState == 1 && isRunning == 1){
             model.setPowerState(ConsoleModel.PowerState.POWER_STATE_RUNNING);
@@ -427,7 +428,7 @@ public class ConsoleController {
         int setTemp = 30;
         //根据环境温度调整目标温度
         int[] tempThreshold = {10, 20, 30, 40, Integer.MAX_VALUE};
-        int[] setTemps = {31, 33, 36, 40, 42};
+        int[] setTemps = {42, 40, 38, 35, 33};
         for(int i = 0; i < tempThreshold.length; i++){
             if(envTemp < tempThreshold[i]){
                 setTemp = setTemps[i];
@@ -438,11 +439,11 @@ public class ConsoleController {
         switch (which){
             case 1:
                 //中温模式
-                setTemp += 2;
+                setTemp += 5;
                 break;
             case 2:
                 //高温模式
-                setTemp += 5;
+                setTemp += 10;
                 break;
             default:
                 //默认下为低温模式

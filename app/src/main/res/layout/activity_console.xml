@@ -132,11 +132,12 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
                 android:src="@drawable/icon_console_weatherglass_0_39_104"
-                android:visibility="gone" />
+                android:visibility="visible" />
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
                 <TextView
                     android:id="@+id/tv_sensor_0"
                     android:layout_width="wrap_content"
@@ -225,11 +226,12 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="15dp"
                 android:src="@drawable/icon_console_weatherglass_0_39_104"
-                android:visibility="gone" />
+                android:visibility="visible" />
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
                 <TextView
                     android:id="@+id/tv_sensor_2"
                     android:layout_width="wrap_content"
