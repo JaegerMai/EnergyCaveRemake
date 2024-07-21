@@ -7,7 +7,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.powerrun.akenergycaveremake"
+        applicationId getApplicationDevId()
         minSdk 21
         targetSdk 33
         versionCode 1
@@ -28,6 +28,32 @@ android {
     }
 }
 
+def getApplicationDevId() {
+    def branchName = getCurrentGitBranch()
+    def appId
+    switch (branchName) {
+        case "master":
+            appId = "com.powerrun.akenergycaveremake"
+            break
+        case "4ch":
+            appId = "com.powerrun.akenergycaveremake4ch"
+            break
+        case "maintenance":
+            appId = "com.powerrun.akenergycaveremakemaintenance"
+            break
+        default:
+            appId = "com.powerrun.akenergycaveremake"
+            break
+    }
+    println "Application ID: $appId"
+    return appId
+}
+
+def getCurrentGitBranch(){
+    def branch = 'git rev-parse --abbrev-ref HEAD'.execute([], project.rootDir).text.trim()
+    println "Current Git branch: $branch"
+    return branch
+}
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
