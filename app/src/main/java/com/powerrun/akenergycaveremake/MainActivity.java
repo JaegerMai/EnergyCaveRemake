@@ -76,6 +76,9 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (scanListDialog != null && scanListDialog.isShowing()) {
+            scanListDialog.dismiss();
+        }
         BleManager.getInstance().disconnectAllDevice();
         BleManager.getInstance().destroy();
     }
