@@ -41,7 +41,8 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Set full screen
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         setContentView(R.layout.activity_main);
         //初始化权限
         initPermissions();
@@ -62,7 +63,7 @@ public class MainActivity extends BaseActivity {
         //长按进行默认参数设置
         imageButtonConsole.setOnLongClickListener(view -> {
             clearDeviceInfo();
-            Toast.makeText(MainActivity.this, "请重新设置参数", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "请重新配置蓝牙设备", Toast.LENGTH_SHORT).show();
             AlertDialog dialog = new AlertDialog.Builder(MainActivity.this).setTitle("配置参数").create();
             DeployInfoView deployInfoView = new DeployInfoView(MainActivity.this, null);
             dialog.setView(deployInfoView);
@@ -213,8 +214,8 @@ public class MainActivity extends BaseActivity {
 
     //权限申请列表
     String[] permissions = new String[] {
-            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+//            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.BLUETOOTH_SCAN,
@@ -238,14 +239,12 @@ public class MainActivity extends BaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             for (int i = 0; i < permissions.length; i++) {
-                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                    //权限申请成功
-                    Log.i(TAG, "onRequestPermissionsResult: 权限申请成功");
-                } else {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                     //权限申请失败
-                    Log.e(TAG, "onRequestPermissionsResult: 权限申请失败");
-                    Toast.makeText(this, "需要同意所有权限才能正常使用！", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Permission denied: " + permissions[i]);
+                    Toast.makeText(this, "权限：" + permissions[i] + "未开启", Toast.LENGTH_LONG).show();
                     ActivityCollector.finishAll();
+                    break;
                 }
             }
         }
