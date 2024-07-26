@@ -43,7 +43,8 @@ public class MusicHelper {
         Log.i(TAG, "playSong: index= " + index);
         currentIndex = index;
         try {
-            Uri setDataSourceuri = Uri.parse("android.resource://com.powerrun.akenergycaveremake/" + musicIndex[index]);
+            Uri setDataSourceuri = Uri.parse("android.resource://" + mContext.getPackageName()
+                    + "/" + musicIndex[index]);
             mediaPlayer.setDataSource(mContext, setDataSourceuri);
             mediaPlayer.prepare();
         } catch (Exception e) {
