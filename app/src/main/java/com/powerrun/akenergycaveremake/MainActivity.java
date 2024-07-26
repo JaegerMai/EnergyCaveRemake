@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -50,6 +51,11 @@ public class MainActivity extends BaseActivity {
         initBluetooth();
         ImageButton imageButtonConsole = findViewById(R.id.image_button_console);
         imageButtonConsole.setOnClickListener(view -> {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if(bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+                Toast.makeText(MainActivity.this, "请打开蓝牙", Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (readDeviceName().equals("")) {
                 BleManager.getInstance().scan(bleScanCallback);
             } else {
