@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -219,22 +220,25 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    //权限申请列表
-    String[] permissions = new String[] {
-//            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-//            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT
-
-    };
     //权限申请码
     private static final int PERMISSION_REQUEST_CODE = 100;
     /**
      * 初始化权限
      */
     private void initPermissions() {
+        //权限申请列表
+        List<String> permissionsList = new ArrayList<>();
+        // Add location permissions for all Android versions
+        permissionsList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        permissionsList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        // Add Bluetooth permissions for Android 12 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionsList.add(Manifest.permission.BLUETOOTH_SCAN);
+            permissionsList.add(Manifest.permission.BLUETOOTH_CONNECT);
+        }
+        // Convert the list to an array
+        String[] permissions = permissionsList.toArray(new String[0]);
+
         for(String permission : permissions) {
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
