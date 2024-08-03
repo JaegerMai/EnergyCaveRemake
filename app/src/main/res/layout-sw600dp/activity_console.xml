@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="100dp">
+        android:layout_marginTop="80dp">
         <!--时间控制-->
         <LinearLayout
             android:layout_width="0dp"
@@ -145,7 +145,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感2：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
                 <TextView
@@ -154,7 +154,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感3：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
             </LinearLayout>
@@ -238,7 +238,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感2：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
                 <TextView
@@ -247,7 +247,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感3：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
             </LinearLayout>
@@ -333,7 +333,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感2：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
                 <TextView
@@ -342,7 +342,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感3：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
             </LinearLayout>
@@ -352,7 +352,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="80dp"
         android:layout_marginBottom="60dp">
 
         <!--开关-->
@@ -499,7 +499,7 @@
                     android:layout_gravity="center"
                     android:text="温感0：\n30°C"
                     android:textColor="@color/white"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:layout_marginBottom="20dp"/>
                 <TextView
                     android:id="@+id/tv_sensor_3"
@@ -507,7 +507,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="温感1：\n30°C"
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:layout_marginBottom="20dp"/>
             </LinearLayout>
