@@ -7,6 +7,7 @@ import android.util.Log;
 
 public class MusicHelper {
     private static final String TAG = "MusicHelper";
+    private boolean isSetDataSource = false;
     private final int[] musicIndex = new int[]{
             R.raw.music_1_yunning,
             R.raw.music_2_hehe,
@@ -30,6 +31,7 @@ public class MusicHelper {
             mediaPlayer.stop();
         }
         mediaPlayer.release();
+        isSetDataSource = false;
     }
     public int getPosition() {
         Log.i(TAG, "getPosition: index=" + currentIndex);
@@ -47,6 +49,7 @@ public class MusicHelper {
                     + "/" + musicIndex[index]);
             mediaPlayer.setDataSource(mContext, setDataSourceuri);
             mediaPlayer.prepare();
+            isSetDataSource = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,6 +58,12 @@ public class MusicHelper {
         Log.i(TAG, "pause");
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
+        }
+    }
+    public void resume() {
+        Log.i(TAG, "resume");
+        if (isSetDataSource && !mediaPlayer.isPlaying()) {
+            mediaPlayer.start();
         }
     }
 }

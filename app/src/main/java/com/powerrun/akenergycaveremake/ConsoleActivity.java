@@ -460,11 +460,13 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                     powerButton.setBackgroundResource(R.drawable.icon_console_pause_red_64_64);
                     tvPowerCn.setText(R.string.stop_cn);
                     tvPowerEn.setText(R.string.stop);
+                    musicHelper.resume();
                     break;
                 case POWER_STATE_OFF:
                     powerButton.setBackgroundResource(R.drawable.switch_blue_pressed_64_64);
                     tvPowerCn.setText(R.string.start_cn);
                     tvPowerEn.setText(R.string.start);
+                    musicHelper.pause();
                     break;
             }
         });
