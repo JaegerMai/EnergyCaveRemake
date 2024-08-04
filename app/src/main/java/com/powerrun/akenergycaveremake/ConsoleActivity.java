@@ -365,7 +365,7 @@ public class ConsoleActivity extends BaseActivity implements View.OnClickListene
                     R.id.image_view_temp_3
             };
 
-            if(temp >=127 || temp == 85){
+            if(temp >=127 || temp == 85 || temp == 0){
                 Toast.makeText(mContext, "通道" + channel + "温感为" + temp + "请检查线路",
                         Toast.LENGTH_SHORT).show();
                 updateTempDisplayWithException(findViewById(imageViewIds[channel.ordinal()]));
